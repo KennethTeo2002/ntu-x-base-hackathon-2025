@@ -7,9 +7,14 @@ import {
   Input,
   InputRightElement,
   Icon,
+  IconButton,
   InputGroup,
 } from "@chakra-ui/react";
+
+import { IoIosRocket } from "react-icons/io";
 import { SearchIcon } from "@chakra-ui/icons";
+import { FaRobot } from "react-icons/fa";
+import { FaBookOpen } from "react-icons/fa6";
 
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
@@ -88,7 +93,7 @@ const Home = () => {
         >
           <Input
             placeholder="What stories do you want to explore today..."
-            _placeholder={{ color: "#AD7DFE", opacity: 0.7 }}
+            _placeholder={{ color: "#AD7DFE", opacity: 0.7, fontSize: "xl" }}
             height="8vh"
             shadow="lg"
             borderRadius="full"
@@ -101,15 +106,40 @@ const Home = () => {
           />
           <InputRightElement height="100%" alignItems="center" paddingX="2.5vw">
             <Button
-              size="lg"
               _hover={{ color: "#7938e1ff" }}
               variant="link"
               color="#AD7DFE"
+              fontSize="2xl"
             >
               <Icon as={SearchIcon} />
             </Button>
           </InputRightElement>
         </InputGroup>
+      </Flex>
+
+      {/* Navigation Tabs */}
+      <Flex
+        position="fixed"
+        bottom="0px"
+        height="10vh"
+        width="100vw"
+        shadow="inner"
+        align="center"
+        justify="space-between"
+        direction="row"
+        paddingX="10vh"
+      >
+        <IconButton variant="link" color="black" fontSize="4xl">
+          <FaRobot />
+        </IconButton>
+
+        <IconButton variant="link" color="black" fontSize="4xl">
+          <IoIosRocket />
+        </IconButton>
+
+        <IconButton variant="link" color="black" fontSize="4xl">
+          <FaBookOpen />
+        </IconButton>
       </Flex>
     </>
   );
