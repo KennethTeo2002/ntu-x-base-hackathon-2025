@@ -16,9 +16,8 @@ function ImageCard({
       borderWidth={variant === "outline" ? "1px" : "0px"}
       borderRadius="30px"
       overflow="hidden"
-      boxShadow={variant === "elevated" ? "md" : "none"}
       bg="#FFFBF9"
-      _hover={{ shadow: "dark-lg" }}
+      _hover={{ shadow: "lg" }}
       transition="all 0.2s"
       {...props}
     >

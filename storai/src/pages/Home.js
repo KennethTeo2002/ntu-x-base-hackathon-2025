@@ -133,6 +133,7 @@ const Home = () => {
         gap={8}
         overflowX="auto"
         maxWidth="91vw"
+        height="40vh"
       >
         <ImageCard
           imageUrl="https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg"
@@ -155,6 +156,8 @@ const Home = () => {
           description="meowmeowmeowmeowmeow"
         ></ImageCard>
       </Flex>
+
+      <Box bg="white" height="14vh" m={2}></Box>
 
       {/* Navigation Tabs */}
       <Flex
