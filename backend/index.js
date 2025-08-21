@@ -1,6 +1,51 @@
 import express from "express";
+import dotenv from "dotenv";
+import { SogniClient } from "@sogni-ai/sogni-client";
+
+dotenv.config({
+  path: ".\\.env",
+});
 
 const port = process.env.PORT || 5000;
+const SOGNIUSERNAME = process.env.SOGNI_USERNAME;
+const PASSWORD = process.env.SOGNI_PASSWORD;
+const options = {
+  appId: "your-app-id", // Required, must be unique string, UUID is recommended
+  network: "fast", // Network to use, 'fast' or 'relaxed'
+};
+
+const getImageUrls = async () => {
+  const client = await SogniClient.createInstance(options);
+  // Login to Sogni account and establish WebSocket connection to Supernet
+  await client.account.login(SOGNIUSERNAME, PASSWORD);
+  // Now wait until list of available models is received.
+  // This step is only needed if you want to create project immediately.
+  const models = await client.projects.waitForModels();
+
+  const mostPopularModel = client.projects.availableModels.reduce((a, b) =>
+    a.workerCount > b.workerCount ? a : b
+  );
+  // You can get list of available models any time from `client.projects.availableModels`
+  const project = await client.projects.create({
+    modelId: mostPopularModel.id,
+    steps: 20,
+    guidance: 7.5,
+    positivePrompt: "a robot eating a bowl of noodles in a futuristic city",
+    negativePrompt:
+      "malformation, bad anatomy, bad hands, missing fingers, cropped, low quality, bad quality, jpeg artifacts, watermark",
+    stylePrompt: "realistic",
+    numberOfImages: 1,
+    tokenType: "spark",
+  });
+
+  project.on("progress", (progress) => {
+    console.log("Project progress:", progress);
+  });
+  const imageUrls = await project.waitForCompletion();
+  console.log("Image URLs:", imageUrls);
+  return imageUrls;
+};
+
 const app = express();
 app.use(express.json());
 const rooms = {};
@@ -12,6 +57,27 @@ const server = app.listen(port, () => {
 app.get("/", (req, res) => {
   console.log("Received a GET request to root");
   res.send("Hello, World!");
+});
+
+// Delete rooms every 3 hours
+const CLEAR_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours
+setInterval(() => {
+  // Clear the roomUrls object, effectively deleting all rooms and their contents
+  for (const key in roomUrls) {
+    delete rooms[key];
+  }
+  console.log(
+    `[${new Date().toLocaleString()}] All rooms automatically cleared.`
+  );
+}, CLEAR_INTERVAL_MS);
+
+// Generate a story: TODO @Kenneth
+app.get("/generate", async (req, res) => {
+  console.log("Received request to generate a story");
+  const urls = await getImageUrls();
+  return res.status(200).json({
+    url: urls,
+  });
 });
 
 /**
