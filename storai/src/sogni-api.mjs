@@ -5,8 +5,8 @@ dotenv.config({
   path: ".\\.env",
 });
 
-const SOGNIUSERNAME = process.env.SOGNIUSERNAME;
-const PASSWORD = process.env.PASSWORD;
+const SOGNIUSERNAME = process.env.SOGNI_USERNAME;
+const PASSWORD = process.env.SOGNI_PASSWORD;
 
 console.log(SOGNIUSERNAME);
 console.log(PASSWORD);
