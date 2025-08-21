@@ -11,6 +11,7 @@ import {
   InputGroup,
 } from "@chakra-ui/react";
 
+import { useNavigate } from "react-router-dom";
 import { IoIosRocket } from "react-icons/io";
 import { SearchIcon } from "@chakra-ui/icons";
 import { FaRobot } from "react-icons/fa";
@@ -30,15 +31,15 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleSearchClick = () => {
-    navigate('/prompt');
+    navigate("/prompt");
   };
 
   const handleRobotClick = () => {
-    navigate('/prompt');
+    navigate("/prompt");
   };
 
   const handleLibraryClick = () => {
-    navigate('/library');
+    navigate("/library");
   };
   return (
     <>
@@ -131,6 +132,7 @@ const Home = () => {
               variant="link"
               color="#477DFE"
               fontSize="2xl"
+              onClick={handleSearchClick}
             >
               <Icon as={SearchIcon} />
             </Button>
@@ -185,9 +187,9 @@ const Home = () => {
         paddingX="8vh"
         bg="white"
       >
-        <IconButton 
-          variant="link" 
-          color="black" 
+        <IconButton
+          variant="link"
+          color="black"
           fontSize="3xl"
           onClick={handleRobotClick}
         >
@@ -198,9 +200,9 @@ const Home = () => {
           <IoIosRocket />
         </IconButton>
 
-        <IconButton 
-          variant="link" 
-          color="black" 
+        <IconButton
+          variant="link"
+          color="black"
           fontSize="3xl"
           onClick={handleLibraryClick}
         >

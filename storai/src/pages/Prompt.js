@@ -16,11 +16,11 @@ const Prompt = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLibraryClick = () => {
-    navigate('/library');
+    navigate("/library");
   };
 
   const handleHomeClick = () => {
-    navigate('/');
+    navigate("/");
   };
 
   const handleLogout = () => {
@@ -29,29 +29,31 @@ const Prompt = () => {
   };
 
   const handlePromptSubmit = () => {
+    console.log("submit");
     if (!prompt.trim()) {
       alert("Please enter a prompt");
       return;
     }
 
     setIsLoading(true);
-    
+
     // Demo mode - simulate API call delay
     setTimeout(() => {
       // Navigate to PromptPopOut with demo story data
-      navigate('/prompt-popout', { 
-        state: { 
+      navigate("/prompt-popout", {
+        state: {
           story: {
             id: 1,
             title: "Dickson",
             chapter: 0,
             content: "Dickson is Zesty and Gay",
-            image_url: "https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg",
+            image_url:
+              "https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg",
             prompt: prompt,
-            type: "original"
+            type: "original",
           },
-          originalPrompt: prompt 
-        } 
+          originalPrompt: prompt,
+        },
       });
       setIsLoading(false);
     }, 2000);
@@ -71,7 +73,7 @@ const Prompt = () => {
         paddingBottom="10vh"
         height="calc(100vh - 24vh)"
       >
-        <PageTitle 
+        <PageTitle
           title="AI Storyteller"
           subtitle="Enter a prompt to begin your custom interactive story."
         />
@@ -96,4 +98,3 @@ const Prompt = () => {
 };
 
 export default Prompt;
-
