@@ -31,7 +31,8 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleSearchClick = () => {
-    navigate("/prompt");
+    // filter library for pre-generated story
+    navigate("/");
   };
 
   const handleRobotClick = () => {
