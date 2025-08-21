@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { SogniClient } from "@sogni-ai/sogni-client";
 
 const GenerateStory = () => {
   // State to store the conversation messages (story parts and user choices)
@@ -79,6 +80,43 @@ const GenerateStory = () => {
     } finally {
       setIsLoading(false); // Hide loading indicator
     }
+  };
+
+  const generateImage = async (imagePromptText) => {
+    const SOGNIUSERNAME = process.env.SOGNIUSERNAME;
+    const PASSWORD = process.env.PASSWORD;
+
+    const options = {
+      appId: "your-app-id", // Required, must be unique string, UUID is recommended
+      network: "fast", // Network to use, 'fast' or 'relaxed'
+    };
+
+    const client = await SogniClient.createInstance(options);
+    // Login to Sogni account and establish WebSocket connection to Supernet
+    await client.account.login(SOGNIUSERNAME, PASSWORD);
+    // Now wait until list of available models is received.
+    // This step is only needed if you want to create project immediately.
+    const models = await client.projects.waitForModels();
+
+    const mostPopularModel = client.projects.availableModels.reduce((a, b) =>
+      a.workerCount > b.workerCount ? a : b
+    );
+    const project = await client.projects.create({
+      modelId: mostPopularModel.id,
+      steps: 20,
+      guidance: 7.5,
+      positivePrompt:
+        "lieutenant Adnan Saidi's heroic last battle on Pasir Panjang against the japanese occupation",
+      negativePrompt:
+        "malformation, bad anatomy, bad hands, missing fingers, cropped, low quality, bad quality, jpeg artifacts, watermark",
+      stylePrompt: "realistic",
+      numberOfImages: 1,
+      tokenType: "spark",
+    });
+
+    const imageUrls = await project.waitForCompletion();
+
+    //add to message
   };
 
   /**
