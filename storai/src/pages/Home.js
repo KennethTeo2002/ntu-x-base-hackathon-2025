@@ -11,6 +11,7 @@ import {
   InputGroup,
 } from "@chakra-ui/react";
 
+import { useNavigate } from "react-router-dom";
 import { IoIosRocket } from "react-icons/io";
 import { SearchIcon } from "@chakra-ui/icons";
 import { FaRobot } from "react-icons/fa";
@@ -27,6 +28,20 @@ import Moon from "../assets/Moon.png";
 import ImageCard from "../components/ImageCard";
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const handleSearchClick = () => {
+    // filter library for pre-generated story
+    navigate("/");
+  };
+
+  const handleRobotClick = () => {
+    navigate("/prompt");
+  };
+
+  const handleLibraryClick = () => {
+    navigate("/library");
+  };
   return (
     <>
       {/* Header */}
@@ -118,6 +133,7 @@ const Home = () => {
               variant="link"
               color="#477DFE"
               fontSize="2xl"
+              onClick={handleSearchClick}
             >
               <Icon as={SearchIcon} />
             </Button>
@@ -172,7 +188,12 @@ const Home = () => {
         paddingX="8vh"
         bg="white"
       >
-        <IconButton variant="link" color="black" fontSize="3xl">
+        <IconButton
+          variant="link"
+          color="black"
+          fontSize="3xl"
+          onClick={handleRobotClick}
+        >
           <FaRobot />
         </IconButton>
 
@@ -180,7 +201,12 @@ const Home = () => {
           <IoIosRocket />
         </IconButton>
 
-        <IconButton variant="link" color="black" fontSize="3xl">
+        <IconButton
+          variant="link"
+          color="black"
+          fontSize="3xl"
+          onClick={handleLibraryClick}
+        >
           <FaBookOpen />
         </IconButton>
       </Flex>
