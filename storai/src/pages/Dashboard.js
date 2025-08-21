@@ -10,7 +10,6 @@ import {
   InputGroup,
 } from "@chakra-ui/react";
 
-import { useNavigate } from "react-router-dom";
 import { SearchIcon } from "@chakra-ui/icons";
 
 import "@fontsource/poppins"; // Defaults to weight 400
@@ -24,14 +23,7 @@ import Moon from "../assets/Moon.png";
 import ImageCard from "../components/ImageCard";
 import NavigationBar from "../components/NavigationBar";
 
-const Home = () => {
-  const navigate = useNavigate();
-
-  const handleSearchClick = () => {
-    // filter library for pre-generated story
-    navigate("/");
-  };
-
+const Dashboard = () => {
   return (
     <>
       {/* Header */}
@@ -52,15 +44,16 @@ const Home = () => {
         </Text>
         <Button
           as="a"
-          href="/login"
+          href="/"
           variant="outline"
-          color="#477DFE" // Sets border + text color
+          color="white"
+          bg="#477DFE"
           borderRadius="full"
           border="2px"
           size="lg"
           fontWeight="medium"
         >
-          Log in
+          Log out
         </Button>
       </Flex>
 
@@ -125,7 +118,6 @@ const Home = () => {
               variant="link"
               color="#477DFE"
               fontSize="2xl"
-              onClick={handleSearchClick}
             >
               <Icon as={SearchIcon} />
             </Button>
@@ -172,4 +164,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Dashboard;
