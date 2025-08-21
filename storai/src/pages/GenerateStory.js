@@ -1,10 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
-
-import dotenv from "dotenv";
-
-dotenv.config({
-  path: ".\\.env",
-});
+import { useState, useEffect, useRef } from "react";
 
 const GenerateStory = () => {
   // State to store the conversation messages (story parts and user choices)
@@ -127,7 +121,7 @@ const GenerateStory = () => {
       },
     };
 
-    const apiKey = process.env.APIKEY;
+    const apiKey = "apikey";
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
     try {
@@ -371,4 +365,4 @@ const GenerateStory = () => {
   );
 };
 
-export default App;
+export default GenerateStory;
