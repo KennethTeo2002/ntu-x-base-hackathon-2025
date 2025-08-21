@@ -27,6 +27,19 @@ import Moon from "../assets/Moon.png";
 import ImageCard from "../components/ImageCard";
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const handleSearchClick = () => {
+    navigate('/prompt');
+  };
+
+  const handleRobotClick = () => {
+    navigate('/prompt');
+  };
+
+  const handleLibraryClick = () => {
+    navigate('/library');
+  };
   return (
     <>
       {/* Header */}
@@ -172,7 +185,12 @@ const Home = () => {
         paddingX="8vh"
         bg="white"
       >
-        <IconButton variant="link" color="black" fontSize="3xl">
+        <IconButton 
+          variant="link" 
+          color="black" 
+          fontSize="3xl"
+          onClick={handleRobotClick}
+        >
           <FaRobot />
         </IconButton>
 
@@ -180,7 +198,12 @@ const Home = () => {
           <IoIosRocket />
         </IconButton>
 
-        <IconButton variant="link" color="black" fontSize="3xl">
+        <IconButton 
+          variant="link" 
+          color="black" 
+          fontSize="3xl"
+          onClick={handleLibraryClick}
+        >
           <FaBookOpen />
         </IconButton>
       </Flex>
