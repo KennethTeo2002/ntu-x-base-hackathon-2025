@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Container,
@@ -15,44 +15,46 @@ import {
   Center,
   useToast,
   Badge,
-  Divider
-} from '@chakra-ui/react';
-import Header from '../components/Header';
-import BottomNavigation from '../components/BottomNavigation';
-import ApiService from '../services/api';
+  Divider,
+} from "@chakra-ui/react";
+import Header from "../components/Header";
+import BottomNavigation from "../components/BottomNavigation";
+import ApiService from "../services/api";
 
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
 
 const PromptPopOut = () => {
   const navigate = useNavigate();
-  const handleHomeClick = () => navigate('/');
-  const handleLibraryClick = () => navigate('/library');
+  const handleHomeClick = () => navigate("/");
+  const handleLibraryClick = () => navigate("/library");
   const location = useLocation();
   const toast = useToast();
-  
+
   const [story, setStory] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingNext, setIsGeneratingNext] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const textColor = useColorModeValue('gray.800', 'white');
-  const subtitleColor = useColorModeValue('gray.600', 'gray.300');
-  const promptBg = useColorModeValue('gray.100', 'gray.700');
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.800", "white");
+  const subtitleColor = useColorModeValue("gray.600", "gray.300");
+  const promptBg = useColorModeValue("gray.100", "gray.700");
 
   useEffect(() => {
     // Get story data from navigation state or localStorage
-    const storyData = location.state?.story || JSON.parse(localStorage.getItem('currentStory') || 'null');
-    
+    const storyData =
+      location.state?.story ||
+      JSON.parse(localStorage.getItem("currentStory") || "null");
+
     if (storyData) {
       setStory(storyData);
       // Save to localStorage for page refresh
-      localStorage.setItem('currentStory', JSON.stringify(storyData));
+      localStorage.setItem("currentStory", JSON.stringify(storyData));
     } else {
       // Redirect back to prompt if no story data
-      navigate('/prompt');
+      navigate("/prompt");
     }
   }, [location.state, navigate]);
 
@@ -61,20 +63,20 @@ const PromptPopOut = () => {
 
     try {
       setIsGeneratingNext(true);
-      
+
       const response = await ApiService.generateNextChapter(story.id, story);
-      
+
       if (response.success) {
         const updatedStory = {
           ...story,
           chapter: response.chapter.chapter,
           content: response.chapter.content,
-          image_url: response.chapter.image_url
+          image_url: response.chapter.image_url,
         };
-        
+
         setStory(updatedStory);
-        localStorage.setItem('currentStory', JSON.stringify(updatedStory));
-        
+        localStorage.setItem("currentStory", JSON.stringify(updatedStory));
+
         toast({
           title: "Next chapter generated!",
           description: `Chapter ${response.chapter.chapter} is ready to read.`,
@@ -84,7 +86,7 @@ const PromptPopOut = () => {
         });
       }
     } catch (error) {
-      console.error('Error generating next chapter:', error);
+      console.error("Error generating next chapter:", error);
       toast({
         title: "Generation failed",
         description: "Could not generate next chapter. Please try again.",
@@ -102,9 +104,9 @@ const PromptPopOut = () => {
 
     try {
       setIsSaving(true);
-      
+
       const response = await ApiService.saveStory(story);
-      
+
       if (response.success) {
         toast({
           title: "Story saved!",
@@ -113,14 +115,14 @@ const PromptPopOut = () => {
           duration: 3000,
           isClosable: true,
         });
-        
+
         // Navigate to library after saving
         setTimeout(() => {
-          navigate('/library');
+          navigate("/library");
         }, 1500);
       }
     } catch (error) {
-      console.error('Error saving story:', error);
+      console.error("Error saving story:", error);
       toast({
         title: "Save failed",
         description: "Could not save story. Please try again.",
@@ -159,11 +161,11 @@ const PromptPopOut = () => {
   return (
     <Box minH="100vh" bg={bgColor}>
       <Header />
-      
+
       <Container maxW="6xl" py={8} px={4}>
-        <Flex gap={8} direction={{ base: 'column', lg: 'row' }}>
+        <Flex gap={8} direction={{ base: "column", lg: "row" }}>
           {/* Left Side - User Prompt & Chat */}
-          <Box w={{ base: '100%', lg: '400px' }} flexShrink={0}>
+          <Box w={{ base: "100%", lg: "400px" }} flexShrink={0}>
             <VStack align="stretch" spacing={6}>
               {/* User Prompt Display */}
               <Box bg={cardBg} rounded="xl" shadow="md" p={6}>
@@ -171,7 +173,7 @@ const PromptPopOut = () => {
                   <Heading size="md" color={textColor}>
                     Your Prompt
                   </Heading>
-                  
+
                   <Box bg={promptBg} rounded="lg" p={4}>
                     <Text fontSize="md" color={textColor} fontStyle="italic">
                       "{story.prompt}"
@@ -186,14 +188,16 @@ const PromptPopOut = () => {
                       Stor.ai's interpretation:
                     </Text>
                     <Text fontSize="sm" color={textColor} lineHeight="1.6">
-                      {story.prompt.toLowerCase().includes('scientist') && story.prompt.toLowerCase().includes('gravity') ? 
-                        "I see you want a story about scientific discovery! I've created a narrative where gravity isn't yet understood, and a scientist rediscovers it through observation and experimentation. The story balances scientific curiosity with human drama." :
-                      story.prompt.toLowerCase().includes('space') || story.prompt.toLowerCase().includes('cosmic') ?
-                        "A space adventure it is! I've crafted a story about deep space exploration and first contact with an unknown civilization. The narrative focuses on discovery, wonder, and the implications of finding we're not alone." :
-                      story.prompt.toLowerCase().includes('ocean') || story.prompt.toLowerCase().includes('underwater') ?
-                        "An oceanic mystery awaits! I've created a story about deep sea exploration and the discovery of something extraordinary in the depths. The narrative combines scientific exploration with ancient mysteries." :
-                        `Based on your prompt "${story.prompt}", I've created an engaging story that captures the essence of your idea while adding creative elements to make it compelling and immersive.`
-                      }
+                      {story.prompt.toLowerCase().includes("scientist") &&
+                      story.prompt.toLowerCase().includes("gravity")
+                        ? "I see you want a story about scientific discovery! I've created a narrative where gravity isn't yet understood, and a scientist rediscovers it through observation and experimentation. The story balances scientific curiosity with human drama."
+                        : story.prompt.toLowerCase().includes("space") ||
+                          story.prompt.toLowerCase().includes("cosmic")
+                        ? "A space adventure it is! I've crafted a story about deep space exploration and first contact with an unknown civilization. The narrative focuses on discovery, wonder, and the implications of finding we're not alone."
+                        : story.prompt.toLowerCase().includes("ocean") ||
+                          story.prompt.toLowerCase().includes("underwater")
+                        ? "An oceanic mystery awaits! I've created a story about deep sea exploration and the discovery of something extraordinary in the depths. The narrative combines scientific exploration with ancient mysteries."
+                        : `Based on your prompt "${story.prompt}", I've created an engaging story that captures the essence of your idea while adding creative elements to make it compelling and immersive.`}
                     </Text>
                   </Box>
 
@@ -216,23 +220,29 @@ const PromptPopOut = () => {
                   <Heading size="sm" color={textColor}>
                     Story Details
                   </Heading>
-                  
+
                   <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>Type:</Text>
+                    <Text fontSize="sm" color={subtitleColor}>
+                      Type:
+                    </Text>
                     <Badge colorScheme="blue" variant="subtle">
-                      {story.type === 'original' ? 'Original' : 'Generated'}
+                      {story.type === "original" ? "Original" : "Generated"}
                     </Badge>
                   </HStack>
-                  
+
                   <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>Chapter:</Text>
+                    <Text fontSize="sm" color={subtitleColor}>
+                      Chapter:
+                    </Text>
                     <Text fontSize="sm" color={textColor} fontWeight="medium">
                       {story.chapter}
                     </Text>
                   </HStack>
-                  
+
                   <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>Created:</Text>
+                    <Text fontSize="sm" color={subtitleColor}>
+                      Created:
+                    </Text>
                     <Text fontSize="sm" color={textColor}>
                       {new Date(story.created_at).toLocaleDateString()}
                     </Text>
@@ -269,7 +279,7 @@ const PromptPopOut = () => {
                   fallbackSrc="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format"
                   loading="lazy"
                 />
-                
+
                 {/* Loading overlay for image */}
                 {isLoading && (
                   <Box
@@ -339,7 +349,7 @@ const PromptPopOut = () => {
       {/* Navigation */}
       <BottomNavigation
         activeTab="prompt"
-        onRobotClick={() => navigate('/prompt')}
+        onRobotClick={() => navigate("/prompt")}
         onHomeClick={handleHomeClick}
         onLibraryClick={handleLibraryClick}
       />

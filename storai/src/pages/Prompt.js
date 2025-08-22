@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Container,
@@ -12,32 +12,31 @@ import {
   useToast,
   Spinner,
   HStack,
-  IconButton,
-  Flex
-} from '@chakra-ui/react';
-import { ArrowForwardIcon, RepeatIcon } from '@chakra-ui/icons';
-import Header from '../components/Header';
-import BottomNavigation from '../components/BottomNavigation';
-import ApiService from '../services/api';
+  Flex,
+} from "@chakra-ui/react";
+import { ArrowForwardIcon, RepeatIcon } from "@chakra-ui/icons";
+import Header from "../components/Header";
+import BottomNavigation from "../components/BottomNavigation";
+import ApiService from "../services/api";
 
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
 
 const Prompt = () => {
   const navigate = useNavigate();
-  const handleHomeClick = () => navigate('/');
-  const handleLibraryClick = () => navigate('/library');
+  const handleHomeClick = () => navigate("/");
+  const handleLibraryClick = () => navigate("/library");
   const location = useLocation();
   const toast = useToast();
-  
-  const [prompt, setPrompt] = useState('');
+
+  const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const textColor = useColorModeValue('gray.800', 'white');
-  const subtitleColor = useColorModeValue('gray.600', 'gray.300');
-  const borderColor = useColorModeValue('blue.200', 'blue.600');
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.800", "white");
+  const subtitleColor = useColorModeValue("gray.600", "gray.300");
+  const borderColor = useColorModeValue("blue.200", "blue.600");
 
   // Sample prompts for inspiration
   const samplePrompts = [
@@ -45,7 +44,7 @@ const Prompt = () => {
     "Write about a scientist who discovers gravity in an alternate reality",
     "Tell me about a brave cat who saves the world from alien invasion",
     "Create a story about underwater cities and their ancient secrets",
-    "A time traveler accidentally changes history and must fix it"
+    "A time traveler accidentally changes history and must fix it",
   ];
 
   useEffect(() => {
@@ -71,7 +70,8 @@ const Prompt = () => {
     if (prompt.trim().length < 10) {
       toast({
         title: "Prompt too short",
-        description: "Please provide a more detailed prompt (at least 10 characters).",
+        description:
+          "Please provide a more detailed prompt (at least 10 characters).",
         status: "warning",
         duration: 3000,
         isClosable: true,
@@ -81,26 +81,26 @@ const Prompt = () => {
 
     try {
       setIsLoading(true);
-      
-      console.log('Generating story for:', prompt);
-      
+
+      console.log("Generating story for:", prompt);
+
       const response = await ApiService.generateStory(prompt.trim());
-      
+
       if (response.success) {
         // Navigate to results page with the generated story
-        navigate('/prompt-result', { 
-          state: { story: response.story }
+        navigate("/prompt-result", {
+          state: { story: response.story },
         });
       } else {
-        throw new Error(response.message || 'Failed to generate story');
+        throw new Error(response.message || "Failed to generate story");
       }
-      
     } catch (error) {
-      console.error('Error generating story:', error);
-      
+      console.error("Error generating story:", error);
+
       toast({
         title: "Generation failed",
-        description: error.message || "Could not generate story. Please try again.",
+        description:
+          error.message || "Could not generate story. Please try again.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -115,13 +115,13 @@ const Prompt = () => {
   };
 
   const handleClearPrompt = () => {
-    setPrompt('');
+    setPrompt("");
   };
 
-  const hoverBg = useColorModeValue('gray.100', 'gray.700');
+  const hoverBg = useColorModeValue("gray.100", "gray.700");
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
+    if (e.key === "Enter" && e.ctrlKey) {
       handlePromptSubmit();
     }
   };
@@ -129,7 +129,7 @@ const Prompt = () => {
   return (
     <Box minH="100vh" bg={bgColor}>
       <Header />
-      
+
       <Container maxW="4xl" py={8} px={4}>
         <VStack spacing={8} align="stretch">
           {/* Page Header */}
@@ -157,14 +157,14 @@ const Prompt = () => {
                   border="2px"
                   borderColor={borderColor}
                   _focus={{
-                    borderColor: 'blue.500',
-                    boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)'
+                    borderColor: "blue.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
                   }}
                   fontSize="md"
                   lineHeight="1.6"
                   isDisabled={isLoading}
                 />
-                
+
                 {/* Character count */}
                 <Text
                   position="absolute"
@@ -195,7 +195,9 @@ const Prompt = () => {
                 </HStack>
 
                 <Button
-                  rightIcon={isLoading ? <Spinner size="sm" /> : <ArrowForwardIcon />}
+                  rightIcon={
+                    isLoading ? <Spinner size="sm" /> : <ArrowForwardIcon />
+                  }
                   colorScheme="blue"
                   size="lg"
                   onClick={handlePromptSubmit}
@@ -216,7 +218,7 @@ const Prompt = () => {
               <Heading size="md" color={textColor}>
                 Need inspiration? Try these prompts:
               </Heading>
-              
+
               <VStack spacing={3} align="stretch">
                 {samplePrompts.map((samplePrompt, index) => (
                   <Button
@@ -247,7 +249,7 @@ const Prompt = () => {
               <Heading size="md" color={textColor}>
                 Tips for better stories:
               </Heading>
-              
+
               <VStack spacing={2} align="stretch">
                 <Text fontSize="sm" color={subtitleColor}>
                   • Be specific about characters, settings, and situations
@@ -256,10 +258,12 @@ const Prompt = () => {
                   • Include emotions or conflicts to make stories more engaging
                 </Text>
                 <Text fontSize="sm" color={subtitleColor}>
-                  • Mention the genre or style you prefer (fantasy, sci-fi, mystery, etc.)
+                  • Mention the genre or style you prefer (fantasy, sci-fi,
+                  mystery, etc.)
                 </Text>
                 <Text fontSize="sm" color={subtitleColor}>
-                  • Don't worry about length - our AI will expand your ideas beautifully
+                  • Don't worry about length - our AI will expand your ideas
+                  beautifully
                 </Text>
               </VStack>
             </VStack>
