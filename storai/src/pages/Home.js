@@ -179,7 +179,7 @@ const Home = () => {
             </Box>
 
             {/* Search Bar */}
-            <Box w="100%" maxW="2xl">
+            <Box w="100%" maxW={{ base: "76vw", md: "2xl" }} mt="2vw">
               <InputGroup size="lg">
                 <Input
                   placeholder="What stories do you want to explore today..."
@@ -194,7 +194,7 @@ const Home = () => {
                     boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
                   }}
                   rounded="full"
-                  fontSize="md"
+                  fontSize={{ base: "sm", md: "md" }}
                 />
                 <InputRightElement>
                   <IconButton
