@@ -84,43 +84,55 @@ const generateStoryPart = async (currentStoryContext, userChoice) => {
 
   const apiKey = process.env.GEMINI_APIKEY;
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+  const MAX_RETRIES = 5;
+  let attempts = 0;
 
-  try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+  while (attempts < MAX_RETRIES) {
+    try {
+      attempts++;
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        `API error: ${response.status} - ${
-          errorData.error.message || response.statusText
-        }`
-      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `API error: ${response.status} - ${
+            errorData.error.message || response.statusText
+          }`
+        );
+      }
+
+      const result = await response.json();
+      if (
+        result.candidates &&
+        result.candidates.length > 0 &&
+        result.candidates[0].content &&
+        result.candidates[0].content.parts &&
+        result.candidates[0].content.parts.length > 0
+      ) {
+        const rawText = result.candidates[0].content.parts[0].text;
+        // Parse the raw text into story content and choices
+        console.log("gemini produced \n%s", rawText);
+        const { story, choices } = parseGeminiResponse(rawText);
+        const sogniPrompt = await generateImagePrompt(story);
+        const imageURL = await getImageUrls(sogniPrompt);
+        return { storyline: story, imageURL: imageURL, choices: choices };
+      } else {
+        console.warn(
+          "Gemini API response structure unexpected:",
+          result,
+          "retrying"
+        );
+      }
+    } catch (error) {
+      console.error("Failed to fetch from Gemini API:", error);
     }
-
-    const result = await response.json();
-    if (
-      result.candidates &&
-      result.candidates.length > 0 &&
-      result.candidates[0].content &&
-      result.candidates[0].content.parts &&
-      result.candidates[0].content.parts.length > 0
-    ) {
-      const rawText = result.candidates[0].content.parts[0].text;
-      // Parse the raw text into story content and choices
-      console.log("gemini produced \n%s", rawText);
-      const { story, choices } = parseGeminiResponse(rawText);
-      const sogniPrompt = await generateImagePrompt(story);
-      const imageURL = await getImageUrls(sogniPrompt);
-      return { storyline: story, imageURL: imageURL, choices: choices };
-    } else {
-      console.error("Gemini API response structure unexpected:", result);
+    if (attempts < MAX_RETRIES) {
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // 2-second delay
     }
-  } catch (error) {
-    console.error("Failed to fetch from Gemini API:", error);
   }
 };
 const parseGeminiResponse = (rawText) => {
@@ -209,7 +221,7 @@ const generateImagePrompt = async (currentStoryContext) => {
         console.warn(
           "Gemini API response structure unexpected:",
           result,
-          retrying
+          "retrying"
         );
       }
     } catch (error) {
