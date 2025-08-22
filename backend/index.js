@@ -3,11 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { SogniClient } from "@sogni-ai/sogni-client";
 
-dotenv.config();
-
-// dotenv.config({
-//   path: ".\\.env",
-// });
+dotenv.config({
+  path: ".\\.env",
+});
 
 const port = process.env.PORT || 5000;
 const SOGNIUSERNAME = process.env.SOGNI_USERNAME;
@@ -52,6 +50,7 @@ const getImageUrls = async (imagePromptText) => {
 
 const generateStoryPart = async (currentStoryContext, userChoice) => {
   console.log("gemini prompt \n%s", currentStoryContext);
+  console.log(process.env.GEMINI_APIKEY);
   // Construct the prompt for the Gemini API
   let promptText = `You are a "Choose Your Own Adventure" story generator.
         Continue the story based on the context provided. After each story segment,
