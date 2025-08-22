@@ -61,7 +61,7 @@ const StoryDisplay = ({
       {/* Story Image */}
       <Box
         width="100%"
-        height="200px"
+        height="400px"
         bg="gray.800"
         borderRadius="15px"
         mb="6"
