@@ -115,7 +115,7 @@ const generateStoryPart = async (currentStoryContext, userChoice) => {
       const { story, choices } = parseGeminiResponse(rawText);
       const sogniPrompt = await generateImagePrompt(story);
       const imageURL = await getImageUrls(sogniPrompt);
-      return imageURL, choices;
+      return { storyline: story, imageURL: imageURL, choices: choices };
     } else {
       console.error("Gemini API response structure unexpected:", result);
     }
@@ -236,12 +236,12 @@ setInterval(() => {
 }, CLEAR_INTERVAL_MS);
 
 // Generate a story: TODO @Kenneth
-app.get("/generate", async (req, res) => {
+app.post("/generate", async (req, res) => {
   console.log("Received request to generate a story");
   const { prompt } = req.body;
-  const urls = await generateStoryPart(prompt);
+  const story = await generateStoryPart(prompt);
   return res.status(200).json({
-    url: urls,
+    payload: story,
   });
 });
 
