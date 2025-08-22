@@ -257,6 +257,24 @@ app.post("/generate", async (req, res) => {
   });
 });
 
+app.post("/create-story/:roomId", (req, res) => {
+  const { title, originalPrompt } = req.body;
+  if (rooms[req.params.roomId]) {
+    res.status(400).json({
+      message: `Room with ID ${req.params.roomId} already exists.`,
+    });
+  } else {
+    rooms[req.params.roomId] = {
+      title: title,
+      originalPrompt: originalPrompt,
+      chapters: [],
+    };
+    res.status(201).json({
+      message: `Room with ID ${req.params.roomId} created successfully.`,
+    });
+  }
+});
+
 /**
  * @route POST /upload-url/:roomId
  * @description Allows users to upload a URL to a specific room ID using a URL parameter for roomId.
@@ -320,5 +338,5 @@ app.get("/room/:roomId", (req, res) => {
   }
 
   // If data is found, send it in the response with a 200 OK status
-  res.status(200).json({ roomId: roomId, entries: urlsAndTexts });
+  res.status(200).json(rooms[roomId]);
 });

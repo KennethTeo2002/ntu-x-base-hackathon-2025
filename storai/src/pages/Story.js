@@ -15,10 +15,12 @@ import {
   Center,
   IconButton,
   Divider,
+  useToast,
 } from "@chakra-ui/react";
 import { ArrowBackIcon, EditIcon } from "@chakra-ui/icons";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
+import { FaRegCopy } from "react-icons/fa";
 
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
@@ -32,6 +34,7 @@ const Story = () => {
   const [currentChapter, setCurrentChapter] = useState(0);
   const [chapters, setChapters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const cardBg = useColorModeValue("white", "gray.800");
@@ -41,7 +44,8 @@ const Story = () => {
   const loadStory = useCallback(async () => {
     try {
       setLoading(true);
-
+      const getResponse = await fetch(`http://localhost:3000/room/${storyId}`);
+      console.log(getResponse);
       // For demo purposes, create a story based on the ID
       // In real implementation, this would fetch from your API
       const demoStory = {
@@ -137,7 +141,7 @@ const Story = () => {
     <Box minH="100vh" bg={bgColor}>
       <Header />
 
-      <Container maxW="7xl" py={8} px={4}>
+      <Container maxW="7xl" py={8} px={4} mb="8vh">
         <Flex gap={8} direction={{ base: "column", lg: "row" }}>
           {/* Left Sidebar - Chapters */}
           <Box w={{ base: "100%", lg: "300px" }} flexShrink={0}>
@@ -176,10 +180,7 @@ const Story = () => {
                     >
                       <VStack align="start" spacing={1}>
                         <Text fontWeight="bold" fontSize="sm">
-                          Chapter {chapter.chapter}
-                        </Text>
-                        <Text fontSize="xs" opacity={0.8}>
-                          {chapter.title || `Chapter ${chapter.chapter}`}
+                          Chapter 1
                         </Text>
                       </VStack>
                     </Button>
@@ -199,9 +200,6 @@ const Story = () => {
                     <Heading size="xl" color={textColor}>
                       {story.title}
                     </Heading>
-                    <Text color="blue.500" fontSize="lg" fontWeight="medium">
-                      {currentChapterData.title}
-                    </Text>
                     {story.originalPrompt && (
                       <Text
                         fontSize="sm"
@@ -250,15 +248,21 @@ const Story = () => {
                 <HStack spacing={4} justify="center">
                   <Button
                     colorScheme="blue"
-                    variant="outline"
+                    rightIcon={<FaRegCopy />}
                     size="lg"
                     flex={1}
-                    maxW="200px"
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast({
+                        title: "Link copied!",
+                        description: `You can now share this story with your friends.`,
+                        status: "success",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }}
                   >
-                    Next Chapter
-                  </Button>
-                  <Button colorScheme="blue" size="lg" flex={1} maxW="200px">
-                    Save
+                    Copy Shareable Link
                   </Button>
                 </HStack>
               </Box>
