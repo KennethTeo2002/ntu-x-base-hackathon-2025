@@ -118,7 +118,8 @@ const generateStoryPart = async (currentStoryContext, userChoice) => {
       const imageURL = await getImageUrls(sogniPrompt);
       return { storyline: story, imageURL: imageURL, choices: choices };
     } else {
-      console.error("Gemini API response structure unexpected:", result);
+      console.log("Gemini API response structure unexpected:", result);
+      console.error("candidate", result.candidates[0]);
     }
   } catch (error) {
     console.error("Failed to fetch from Gemini API:", error);

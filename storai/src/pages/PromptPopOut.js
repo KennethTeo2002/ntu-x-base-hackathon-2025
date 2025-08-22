@@ -44,6 +44,7 @@ const PromptPopOut = () => {
 
   useEffect(() => {
     // Get story data from navigation state or localStorage
+    console.log(location);
     const storyData =
       location.state?.story ||
       JSON.parse(localStorage.getItem("currentStory") || "null");
@@ -188,16 +189,7 @@ const PromptPopOut = () => {
                       Stor.ai's interpretation:
                     </Text>
                     <Text fontSize="sm" color={textColor} lineHeight="1.6">
-                      {story.prompt.toLowerCase().includes("scientist") &&
-                      story.prompt.toLowerCase().includes("gravity")
-                        ? "I see you want a story about scientific discovery! I've created a narrative where gravity isn't yet understood, and a scientist rediscovers it through observation and experimentation. The story balances scientific curiosity with human drama."
-                        : story.prompt.toLowerCase().includes("space") ||
-                          story.prompt.toLowerCase().includes("cosmic")
-                        ? "A space adventure it is! I've crafted a story about deep space exploration and first contact with an unknown civilization. The narrative focuses on discovery, wonder, and the implications of finding we're not alone."
-                        : story.prompt.toLowerCase().includes("ocean") ||
-                          story.prompt.toLowerCase().includes("underwater")
-                        ? "An oceanic mystery awaits! I've created a story about deep sea exploration and the discovery of something extraordinary in the depths. The narrative combines scientific exploration with ancient mysteries."
-                        : `Based on your prompt "${story.prompt}", I've created an engaging story that captures the essence of your idea while adding creative elements to make it compelling and immersive.`}
+                      {story.storyline}
                     </Text>
                   </Box>
 
@@ -238,15 +230,6 @@ const PromptPopOut = () => {
                       {story.chapter}
                     </Text>
                   </HStack>
-
-                  <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>
-                      Created:
-                    </Text>
-                    <Text fontSize="sm" color={textColor}>
-                      {new Date(story.created_at).toLocaleDateString()}
-                    </Text>
-                  </HStack>
                 </VStack>
               </Box>
             </VStack>
@@ -270,7 +253,7 @@ const PromptPopOut = () => {
               {/* Story Image - Fixed sizing */}
               <Box position="relative" w="100%" h="400px" overflow="hidden">
                 <Image
-                  src={story.image_url}
+                  src={story.imageURL}
                   alt={`${story.title} - Chapter ${story.chapter}`}
                   w="100%"
                   h="100%"
@@ -307,7 +290,7 @@ const PromptPopOut = () => {
                   whiteSpace="pre-wrap"
                   textAlign="justify"
                 >
-                  {story.content}
+                  {story.storyline}
                 </Text>
               </Box>
 
