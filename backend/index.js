@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import { SogniClient } from "@sogni-ai/sogni-client";
 
@@ -212,6 +213,7 @@ const generateImagePrompt = async (currentStoryContext) => {
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 const rooms = {};
 
 const server = app.listen(port, () => {
@@ -238,8 +240,8 @@ setInterval(() => {
 // Generate a story: TODO @Kenneth
 app.post("/generate", async (req, res) => {
   console.log("Received request to generate a story");
-  const { prompt } = req.body;
-  const story = await generateStoryPart(prompt);
+  const { prompt, choice } = req.body;
+  const story = await generateStoryPart(prompt, choice);
   return res.status(200).json({
     payload: story,
   });
