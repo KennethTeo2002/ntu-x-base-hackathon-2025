@@ -26,6 +26,7 @@ import Moon from "../assets/Moon.png";
 
 // Components
 import ImageCard from "../components/ImageCard";
+import Header from "../components/Header";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -45,32 +46,7 @@ const Home = () => {
   return (
     <Flex flexDir="column" maxWidth="100vw">
       {/* Header */}
-      <Flex
-        dir="row"
-        align="center"
-        justify="space-between"
-        padding="30px 10vw"
-        w="100%"
-      >
-        <Text
-          fontFamily="Poppins"
-          fontWeight="medium"
-          fontSize="50"
-          color="black"
-        >
-          Stor.ai
-        </Text>
-        <Button
-          variant="outline"
-          color="#477DFE" // Sets border + text color
-          borderRadius="full"
-          border="2px"
-          size="lg"
-          fontWeight="medium"
-        >
-          Log out
-        </Button>
-      </Flex>
+      <Header onLogout={() => navigate("/")} />
 
       {/* Body */}
       <Flex

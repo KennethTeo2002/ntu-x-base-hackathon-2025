@@ -7,8 +7,9 @@ const Header = ({ onLogout }) => {
       dir="row"
       align="center"
       justify="space-between"
-      padding="8vh"
-      w="100vw"
+      px="10vw"
+      py="30px"
+      w="100%"
     >
       <Text
         fontFamily="Poppins"
@@ -34,4 +35,3 @@ const Header = ({ onLogout }) => {
 };
 
 export default Header;
-

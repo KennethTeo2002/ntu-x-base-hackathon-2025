@@ -60,7 +60,7 @@ const Prompt = () => {
   };
 
   return (
-    <>
+    <Flex flexDir="column" height="100%" width="100%">
       {/* Header */}
       <Header onLogout={handleLogout} />
 
@@ -71,7 +71,7 @@ const Prompt = () => {
         justify="center"
         paddingX="8vh"
         paddingBottom="10vh"
-        height="calc(100vh - 24vh)"
+        height="100%"
       >
         <PageTitle
           title="AI Storyteller"
@@ -93,7 +93,7 @@ const Prompt = () => {
         onHomeClick={handleHomeClick}
         onLibraryClick={handleLibraryClick}
       />
-    </>
+    </Flex>
   );
 };
 
