@@ -22,3 +22,11 @@ cd backend
 npm install
 npm start
 ```
+Access the frontend at http://localhost:3000/
+
+### Team Members
+- Kah Ho - [@kahkoii](https://github.com/kahkoii)
+- Kenneth - [@KennethTeo2002](https://github.com/KennethTeo2002)
+- Tze Xuan - [@tze-xuan](https://github.com/tze-xuan)
+- Edmund - [@EdmundTehEs](https://github.com/EdmundTehEs)
+- Dickson - [@dickson76](https://github.com/dickson76)
