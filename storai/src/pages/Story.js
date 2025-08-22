@@ -44,8 +44,8 @@ const Story = () => {
   const loadStory = useCallback(async () => {
     try {
       setLoading(true);
-      const getResponse = await fetch(`http://localhost:3000/room/${storyId}`);
-      console.log(getResponse);
+      const getResponse = await fetch(`http://localhost:5000/room/${storyId}`);
+      console.log(getResponse.json());
       // For demo purposes, create a story based on the ID
       // In real implementation, this would fetch from your API
       const demoStory = {
