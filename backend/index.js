@@ -3,9 +3,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { SogniClient } from "@sogni-ai/sogni-client";
 
-dotenv.config({
-  path: ".\\.env",
-});
+dotenv.config();
+
+// dotenv.config({
+//   path: ".\\.env",
+// });
 
 const port = process.env.PORT || 5000;
 const SOGNIUSERNAME = process.env.SOGNI_USERNAME;
@@ -236,7 +238,7 @@ const generateImagePrompt = async (currentStoryContext) => {
 const app = express();
 app.use(express.json());
 app.use(cors());
-const rooms = {};
+const stories = {};
 
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
@@ -247,15 +249,15 @@ app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
 
-// Delete rooms every 3 hours
+// Delete stories every 3 hours
 const CLEAR_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours
 setInterval(() => {
-  // Clear the roomUrls object, effectively deleting all rooms and their contents
-  for (const key in roomUrls) {
-    delete rooms[key];
+  // Clear the storyUrls object, effectively deleting all stories and their contents
+  for (const key in storyUrls) {
+    delete stories[key];
   }
   console.log(
-    `[${new Date().toLocaleString()}] All rooms automatically cleared.`
+    `[${new Date().toLocaleString()}] All stories automatically cleared.`
   );
 }, CLEAR_INTERVAL_MS);
 
@@ -269,88 +271,88 @@ app.post("/generate", async (req, res) => {
   });
 });
 
-app.post("/create-story/:roomId", (req, res) => {
+app.post("/create-story/:storyId", (req, res) => {
   const { title, originalPrompt } = req.body;
-  if (rooms[req.params.roomId]) {
+  if (stories[req.params.storyId]) {
     res.status(400).json({
-      message: `Room with ID ${req.params.roomId} already exists.`,
+      message: `Story with ID ${req.params.storyId} already exists.`,
     });
   } else {
-    rooms[req.params.roomId] = {
+    stories[req.params.storyId] = {
       title: title,
       originalPrompt: originalPrompt,
       chapters: [],
     };
     console.log(
-      `Room with ID ${req.params.roomId} created successfully with title "${title}".`
+      `Story with ID ${req.params.storyId} created successfully with title "${title}".`
     );
     res.status(201).json({
-      message: `Room with ID ${req.params.roomId} created successfully.`,
+      message: `Story with ID ${req.params.storyId} created successfully.`,
     });
   }
 });
 
 /**
- * @route POST /upload-url/:roomId
- * @description Allows users to upload a URL to a specific room ID using a URL parameter for roomId.
- * @param {string} roomId - The ID of the room to which the URL will be submitted (from URL params).
+ * @route POST /upload-url/:roostoryIdmId
+ * @description Allows users to upload a URL to a specific story ID using a URL parameter for storyId.
+ * @param {string} storyId - The ID of the story to which the URL will be submitted (from URL params).
  * @body {string} url - The URL to be submitted (from request body).
  * @body {string} paragraph - The accompanying paragraph text.
  * @returns {object} - Confirmation message or error.
  */
-app.post("/upload/:roomId", (req, res) => {
-  // Destructure roomId from URL parameters
-  const { roomId } = req.params;
+app.post("/upload/:storyId", (req, res) => {
+  // Destructure storyId from URL parameters
+  const { storyId } = req.params;
   // Destructure url from the request body
   const { url, text } = req.body;
 
-  // Validate if both roomId (from params) and url (from body) are provided
-  if (!roomId || !url || !text) {
+  // Validate if both storyId (from params) and url (from body) are provided
+  if (!storyId || !url || !text) {
     // If not, send a 400 Bad Request status with an error message
     return res.status(400).json({
-      message: "Both roomId (in URL) and url (in body) are required.",
+      message: "Both storyId (in URL) and url (in body) are required.",
     });
   }
-  console.log("RECEIVED UPLOAD REQ TO ROOM " + roomId);
-  console.log(rooms[roomId]);
+  console.log("RECEIVED UPLOAD REQ TO STORY " + storyId);
+  console.log(stories[storyId]);
 
-  // Check if the roomId already exists in our storage
-  if (!rooms[roomId]) {
-    // If not, initialize an empty array for this new room ID
-    rooms[roomId] = [];
+  // Check if the storyId already exists in our storage
+  if (!stories[storyId]) {
+    // If not, initialize an empty array for this new story ID
+    stories[storyId] = [];
   }
 
-  // Add the submitted URL to the array for the specified roomId
-  rooms[roomId].chapters.push({ url, text });
+  // Add the submitted URL to the array for the specified storyId
+  stories[storyId].chapters.push({ url, text });
 
   // Send a success response with a 201 Created status
-  console.log(`URL '${url}' added to room '${roomId}'.`);
+  console.log(`URL '${url}' added to stories '${storyId}'.`);
   res.status(201).json({
-    message: `URL '${url}' submitted successfully to room '${roomId}'.`,
+    message: `URL '${url}' submitted successfully to stories '${storyId}'.`,
   });
 });
 
 /**
- * @route GET /room-urls/:roomId
- * @description Retrieves all URLs and paragraphs submitted to a particular room ID.
- * @param {string} roomId - The ID of the room whose URLs are to be retrieved.
+ * @route GET /story-urls/:storyId
+ * @description Retrieves all URLs and paragraphs submitted to a particular story ID.
+ * @param {string} storyId - The ID of the story whose URLs are to be retrieved.
  * @returns {object} - An array of URLs or an error message.
  */
-app.get("/room/:roomId", (req, res) => {
-  // Extract roomId from the URL parameters
-  const { roomId } = req.params;
+app.get("/story/:storyId", (req, res) => {
+  // Extract storyId from the URL parameters
+  const { storyId } = req.params;
 
-  // Retrieve URLs and texts for the given roomId from our storage
-  const urlsAndTexts = rooms[roomId];
+  // Retrieve URLs and texts for the given storyId from our storage
+  const urlsAndTexts = stories[storyId];
 
-  // Check if any URLs and texts exist for the specified roomId
+  // Check if any URLs and texts exist for the specified storyId
   if (!urlsAndTexts || urlsAndTexts.length === 0) {
     // If no data is found, send a 404 Not Found status
     return res.status(404).json({
-      message: `No URLs and accompanying text found for room '${roomId}'.`,
+      message: `No URLs and accompanying text found for story '${storyId}'.`,
     });
   }
 
   // If data is found, send it in the response with a 200 OK status
-  res.status(200).json(rooms[roomId]);
+  res.status(200).json(stories[storyId]);
 });

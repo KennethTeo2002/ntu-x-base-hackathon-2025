@@ -44,60 +44,63 @@ const Story = () => {
   const loadStory = useCallback(async () => {
     try {
       setLoading(true);
-      const getResponse = await fetch(`http://localhost:5000/room/${storyId}`);
-      console.log(getResponse.json());
-      // For demo purposes, create a story based on the ID
-      // In real implementation, this would fetch from your API
-      const demoStory = {
-        id: storyId,
-        title:
-          storyId === "demo1"
-            ? "Elara's Equation"
-            : storyId === "demo2"
-            ? "The Cosmic Discovery"
-            : storyId === "demo3"
-            ? "Ocean's Secret"
-            : "Generated Story",
-        originalPrompt:
-          storyId === "demo1"
-            ? "Write me a story about a scientist who discovered gravity"
-            : storyId === "demo2"
-            ? "Tell me about a space adventure"
-            : storyId === "demo3"
-            ? "Create a story about ocean mysteries"
-            : "A magical adventure",
-        type: storyId.startsWith("demo") ? "borrowed" : "original",
-        created_at: new Date().toISOString(),
-      };
+      console.log(`Loading story with ID: ${storyId}`);
 
-      const demoChapters = [
-        {
-          chapter: 0,
-          title: "Chapter 0: The Discovery",
-          content:
-            storyId === "demo1"
-              ? "In the quiet halls of Cambridge University, Dr. Elara Voss worked late into the night, her calculations sprawling across multiple blackboards. The equations seemed to dance before her tired eyes, but something was different tonight. As she dropped her chalk and watched it fall, a profound realization struck her. The force that pulled the chalk to the ground was the same force that kept the planets in their orbits. She had discovered what would later be known as universal gravitation, though she didn't know it yet. Her heart raced as she began to understand the implications of her work."
-              : storyId === "demo2"
-              ? "Captain Maya Chen gazed out at the infinite expanse of stars from the bridge of the starship Horizon. Three years into their deep space mission, they had discovered something extraordinary - a signal from an unknown civilization. The rhythmic pulses seemed to contain mathematical patterns, almost like a cosmic equation waiting to be solved. As the ship's AI analyzed the data, Maya couldn't shake the feeling that this discovery would change humanity forever."
-              : "Dr. Sarah Martinez descended into the Mariana Trench in her state-of-the-art submersible. At depths where sunlight had never touched, her sonar detected something impossible - geometric structures too perfect to be natural. As she approached, bioluminescent creatures illuminated what appeared to be an ancient underwater city, its architecture unlike anything seen on Earth.",
-          image_url:
-            storyId === "demo1"
-              ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format"
-              : storyId === "demo2"
-              ? "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=800&h=600&fit=crop&auto=format"
-              : "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop&auto=format",
+      const response = await fetch(`http://localhost:5000/story/${storyId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ];
+      });
 
-      setStory(demoStory);
-      setChapters(demoChapters);
-      setCurrentChapter(0);
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Story not found");
+        }
+        throw new Error(`Failed to fetch story: ${response.status}`);
+      }
+
+      const storyData = await response.json();
+      console.log("Loaded story data:", storyData);
+
+      // Your backend returns the story object directly
+      setStory({
+        id: storyData.id || storyId,
+        title: storyData.title || "Untitled Story",
+        originalPrompt: storyData.originalPrompt || "",
+        imageURL: storyData.imageURL || "",
+        storyline: storyData.storyline || "",
+        type: storyData.type || "original",
+        created_at: storyData.created_at || new Date().toISOString(),
+        updated_at: storyData.updated_at || new Date().toISOString(),
+      });
+
+      // Set chapters - your backend stores them as an array
+      const chaptersData = storyData.chapters || [];
+      setChapters(chaptersData);
+
+      // Set current chapter to first if available
+      if (chaptersData.length > 0) {
+        setCurrentChapter(0);
+      }
     } catch (error) {
       console.error("Error loading story:", error);
+
+      setStory(null);
+      setChapters([]);
+
+      toast({
+        title: "Failed to load story",
+        description:
+          error.message || "Could not load the story. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setLoading(false);
     }
-  }, [storyId]);
+  }, [storyId, toast]);
 
   useEffect(() => {
     loadStory();
@@ -123,7 +126,7 @@ const Story = () => {
     );
   }
 
-  if (!story || chapters.length === 0) {
+  if (!story || !chapters || chapters.length === 0) {
     return (
       <Box minH="100vh" bg={bgColor}>
         <Header />
@@ -135,7 +138,8 @@ const Story = () => {
     );
   }
 
-  const currentChapterData = chapters[currentChapter];
+  // Safe access to current chapter data
+  const currentChapterData = chapters[currentChapter] || {};
 
   return (
     <Box minH="100vh" bg={bgColor}>
@@ -167,7 +171,7 @@ const Story = () => {
                 <VStack align="stretch" spacing={2}>
                   {chapters.map((chapter, index) => (
                     <Button
-                      key={index}
+                      key={chapter.id || index}
                       variant={currentChapter === index ? "solid" : "ghost"}
                       colorScheme={currentChapter === index ? "blue" : "gray"}
                       justifyContent="flex-start"
@@ -180,8 +184,13 @@ const Story = () => {
                     >
                       <VStack align="start" spacing={1}>
                         <Text fontWeight="bold" fontSize="sm">
-                          Chapter 1
+                          {chapter.title || `Chapter ${index + 1}`}
                         </Text>
+                        {chapter.choices && chapter.choices.length > 0 && (
+                          <Text fontSize="xs" color="gray.500">
+                            {chapter.choices.length} choices
+                          </Text>
+                        )}
                       </VStack>
                     </Button>
                   ))}
@@ -222,7 +231,7 @@ const Story = () => {
               {/* Story Image */}
               <Box position="relative" w="100%" h="400px" overflow="hidden">
                 <Image
-                  src={currentChapterData.image_url}
+                  src={story.imageURL}
                   alt={`${story.title} - ${currentChapterData.title}`}
                   w="100%"
                   h="100%"
@@ -238,9 +247,36 @@ const Story = () => {
                   lineHeight="1.8"
                   color={textColor}
                   whiteSpace="pre-wrap"
+                  mb={6}
                 >
-                  {currentChapterData.content}
+                  {currentChapterData.text ||
+                    "No content available for this chapter."}
                 </Text>
+
+                {/* Show choices if available */}
+                {currentChapterData.choices &&
+                  currentChapterData.choices.length > 0 && (
+                    <VStack spacing={3} align="stretch">
+                      <Heading size="md" color="blue.500">
+                        What do you choose?
+                      </Heading>
+                      {currentChapterData.choices.map((choice, index) => (
+                        <Button
+                          key={choice.id || index}
+                          variant="outline"
+                          colorScheme="blue"
+                          justifyContent="flex-start"
+                          textAlign="left"
+                          whiteSpace="normal"
+                          height="auto"
+                          py={4}
+                          px={6}
+                        >
+                          {choice.text}
+                        </Button>
+                      ))}
+                    </VStack>
+                  )}
               </Box>
 
               {/* Story Actions */}

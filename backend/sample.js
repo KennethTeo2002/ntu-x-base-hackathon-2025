@@ -1,5 +1,5 @@
 const postUrl = `http://localhost:5000/generate`;
-// const getUrl = `http://localhost:3000/room/${roomId}`;
+// const getUrl = `http://localhost:3000/story/${storyId}`;
 console.log(postUrl);
 // Make the POST request using fetch API
 fetch(postUrl, {

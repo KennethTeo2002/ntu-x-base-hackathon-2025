@@ -33,7 +33,7 @@ const PromptPopOut = () => {
   const toast = useToast();
   const uploadStoryURL = "http://localhost:5000/upload";
 
-  const [roomId, setRoomId] = useState();
+  const [storyId, setStoryId] = useState();
   const [prompt, setPrompt] = useState();
   const [story, setStory] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,10 +59,10 @@ const PromptPopOut = () => {
     const storyData =
       location.state?.story ||
       JSON.parse(localStorage.getItem("currentStory") || "null");
-    setRoomId(location.state.roomId);
+    setStoryId(location.state.storyId);
     setPrompt(location.state.prompt);
 
-    fetch(`${uploadStoryURL}/${location.state.roomId}`, {
+    fetch(`${uploadStoryURL}/${location.state.storyId}`, {
       method: "POST", // Specify the HTTP method as POST
       headers: {
         "Content-Type": "application/json", // Set content type to JSON
@@ -314,7 +314,7 @@ const PromptPopOut = () => {
                     flex={1}
                     onClick={() => {
                       navigator.clipboard.writeText(
-                        `http://${window.location.hostname}:3000/story/${roomId}`
+                        `http://${window.location.hostname}:3000/story/${storyId}`
                       );
                       toast({
                         title: "Link copied!",
