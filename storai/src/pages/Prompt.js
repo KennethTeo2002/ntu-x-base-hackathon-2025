@@ -102,10 +102,11 @@ const Prompt = () => {
       return;
     }
 
+    let roomId = "";
     try {
       setIsLoading(true);
       while (true) {
-        const roomId = generateStoryId();
+        roomId = generateStoryId();
         const res = await fetch(`${createStoryURL}/${roomId}`, {
           method: "POST", // Specify the HTTP method as POST
           headers: {
@@ -130,7 +131,7 @@ const Prompt = () => {
       if (response) {
         // Navigate to results page with the generated story
         navigate("/prompt-result", {
-          state: { story: response.payload },
+          state: { story: response.payload, roomId, prompt },
         });
       } else {
         throw new Error(response.message || "Failed to generate story");

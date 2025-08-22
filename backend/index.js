@@ -44,7 +44,7 @@ const getImageUrls = async (imagePromptText) => {
     console.log("Project progress:", progress);
   });
   const imageUrls = await project.waitForCompletion();
-  console.log("Image URLs:", imageUrls);
+  // console.log("Image URLs:", imageUrls);
   return imageUrls;
 };
 
@@ -311,6 +311,8 @@ app.post("/upload/:roomId", (req, res) => {
       message: "Both roomId (in URL) and url (in body) are required.",
     });
   }
+  console.log("RECEIVED UPLOAD REQ TO ROOM " + roomId);
+  console.log(rooms[roomId]);
 
   // Check if the roomId already exists in our storage
   if (!rooms[roomId]) {
@@ -319,13 +321,10 @@ app.post("/upload/:roomId", (req, res) => {
   }
 
   // Add the submitted URL to the array for the specified roomId
-  rooms[roomId].push({ url, text });
+  rooms[roomId].chapters.push({ url, text });
 
   // Send a success response with a 201 Created status
-  console.log(
-    `URL '${url}' added to room '${roomId}'. Current URLs for room '${roomId}':`,
-    rooms[roomId]
-  );
+  console.log(`URL '${url}' added to room '${roomId}'.`);
   res.status(201).json({
     message: `URL '${url}' submitted successfully to room '${roomId}'.`,
   });

@@ -20,6 +20,7 @@ import {
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import ApiService from "../services/api";
+import { FaRegCopy } from "react-icons/fa";
 
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
@@ -30,7 +31,10 @@ const PromptPopOut = () => {
   const handleLibraryClick = () => navigate("/library");
   const location = useLocation();
   const toast = useToast();
+  const uploadStoryURL = "http://localhost:5000/upload";
 
+  const [roomId, setRoomId] = useState();
+  const [prompt, setPrompt] = useState();
   const [story, setStory] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingNext, setIsGeneratingNext] = useState(false);
@@ -42,12 +46,33 @@ const PromptPopOut = () => {
   const subtitleColor = useColorModeValue("gray.600", "gray.300");
   const promptBg = useColorModeValue("gray.100", "gray.700");
 
+  // storyData
+  // {
+  //   "storyline": "paragraph",
+  //   "imageURL": "http://oneurl",
+  //   "choices": ["a", "b", "c"]
+  // }
+
   useEffect(() => {
     // Get story data from navigation state or localStorage
     console.log(location);
     const storyData =
       location.state?.story ||
       JSON.parse(localStorage.getItem("currentStory") || "null");
+    setRoomId(location.state.roomId);
+    setPrompt(location.state.prompt);
+
+    fetch(`${uploadStoryURL}/${location.state.roomId}`, {
+      method: "POST", // Specify the HTTP method as POST
+      headers: {
+        "Content-Type": "application/json", // Set content type to JSON
+      },
+      // Convert the data to JSON string for the request body
+      body: JSON.stringify({
+        url: storyData.imageURL,
+        text: storyData.storyline,
+      }),
+    });
 
     if (storyData) {
       setStory(storyData);
@@ -163,7 +188,7 @@ const PromptPopOut = () => {
     <Box minH="100vh" bg={bgColor}>
       <Header />
 
-      <Container maxW="6xl" py={8} px={4}>
+      <Container maxW="6xl" py={8} px={4} mb="8vh">
         <Flex gap={8} direction={{ base: "column", lg: "row" }}>
           {/* Left Side - User Prompt & Chat */}
           <Box w={{ base: "100%", lg: "400px" }} flexShrink={0}>
@@ -177,7 +202,7 @@ const PromptPopOut = () => {
 
                   <Box bg={promptBg} rounded="lg" p={4}>
                     <Text fontSize="md" color={textColor} fontStyle="italic">
-                      "{story.prompt}"
+                      {prompt}
                     </Text>
                   </Box>
 
@@ -205,33 +230,6 @@ const PromptPopOut = () => {
                   </Button>
                 </VStack>
               </Box>
-
-              {/* Story Metadata */}
-              <Box bg={cardBg} rounded="xl" shadow="md" p={6}>
-                <VStack align="stretch" spacing={3}>
-                  <Heading size="sm" color={textColor}>
-                    Story Details
-                  </Heading>
-
-                  <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>
-                      Type:
-                    </Text>
-                    <Badge colorScheme="blue" variant="subtle">
-                      {story.type === "original" ? "Original" : "Generated"}
-                    </Badge>
-                  </HStack>
-
-                  <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>
-                      Chapter:
-                    </Text>
-                    <Text fontSize="sm" color={textColor} fontWeight="medium">
-                      {story.chapter}
-                    </Text>
-                  </HStack>
-                </VStack>
-              </Box>
             </VStack>
           </Box>
 
@@ -245,7 +243,7 @@ const PromptPopOut = () => {
                     {story.title}
                   </Heading>
                   <Text color="blue.500" fontSize="lg" fontWeight="medium">
-                    Chapter {story.chapter}
+                    Chapter 1
                   </Text>
                 </VStack>
               </Box>
@@ -302,7 +300,6 @@ const PromptPopOut = () => {
                     variant="outline"
                     size="lg"
                     flex={1}
-                    maxW="200px"
                     onClick={handleNextChapter}
                     isLoading={isGeneratingNext}
                     loadingText="Generating..."
@@ -312,15 +309,23 @@ const PromptPopOut = () => {
                   </Button>
                   <Button
                     colorScheme="blue"
+                    rightIcon={<FaRegCopy />}
                     size="lg"
                     flex={1}
-                    maxW="200px"
-                    onClick={handleSaveStory}
-                    isLoading={isSaving}
-                    loadingText="Saving..."
-                    isDisabled={isLoading || isGeneratingNext}
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `http://${window.location.hostname}:3000/story/${roomId}`
+                      );
+                      toast({
+                        title: "Link copied!",
+                        description: `You can now share this story with your friends.`,
+                        status: "success",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }}
                   >
-                    Save
+                    Copy Shareable Link
                   </Button>
                 </HStack>
               </Box>

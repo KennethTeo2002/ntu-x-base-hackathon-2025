@@ -1,15 +1,14 @@
 import { Text, Flex, Button } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import "@fontsource/poppins";
 
 const Header = ({ onLogout }) => {
+  const navigate = useNavigate();
   return (
     <Flex
       dir="row"
       align="center"
       justify="space-between"
-      px="10vw"
-      py="30px"
-      w="100%"
       px="10vw"
       py="20px"
       w="100%"
@@ -19,6 +18,8 @@ const Header = ({ onLogout }) => {
         fontWeight="medium"
         fontSize="50"
         color="black"
+        cursor="pointer"
+        onClick={() => navigate("/")}
       >
         Stor.ai
       </Text>
