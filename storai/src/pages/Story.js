@@ -68,7 +68,7 @@ const Story = () => {
         id: storyData.id || storyId,
         title: storyData.title || "Untitled Story",
         originalPrompt: storyData.originalPrompt || "",
-        imageURL: storyData.imageURL || "",
+        imageURL: storyData.chapters[0].url || "",
         storyline: storyData.storyline || "",
         type: storyData.type || "original",
         created_at: storyData.created_at || new Date().toISOString(),
