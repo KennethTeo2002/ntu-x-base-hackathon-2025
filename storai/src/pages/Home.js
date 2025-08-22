@@ -43,14 +43,14 @@ const Home = () => {
     navigate("/library");
   };
   return (
-    <>
+    <Flex flexDir="column" maxWidth="100vw">
       {/* Header */}
       <Flex
         dir="row"
         align="center"
         justify="space-between"
-        padding="8vh"
-        w="100vw"
+        padding="30px 10vw"
+        w="100%"
       >
         <Text
           fontFamily="Poppins"
@@ -68,34 +68,53 @@ const Home = () => {
           size="lg"
           fontWeight="medium"
         >
-          Log in
+          Log out
         </Button>
       </Flex>
 
       {/* Body */}
-      <Flex align="center" h="36vh">
+      <Flex
+        flexDir={{ base: "col", md: "row" }}
+        align="center"
+        h="54vh"
+        px="4vw"
+      >
         {/* Title */}
-        <Flex align="start" px="8vh" direction="column">
-          <Text fontSize="7xl" fontFamily="Merriweather">
+        <Flex
+          align="start"
+          px="8vh"
+          direction="column"
+          mb={{ base: "180px", md: "0" }}
+        >
+          <Text fontSize={{ base: "4xl", md: "6xl" }} fontFamily="Merriweather">
             Build new worlds.
           </Text>
-          <Text fontSize="7xl" fontFamily="Merriweather">
+          <Text fontSize={{ base: "4xl", md: "6xl" }} fontFamily="Merriweather">
             Write your own story.
           </Text>
         </Flex>
 
         {/* Astronaut */}
-        <Box zIndex="-1" position="absolute" top="2vh" right="38vh">
+        <Box
+          zIndex="-1"
+          position="absolute"
+          top={{ base: "230px", md: "50px" }}
+          right={{ base: "30vw", md: "20vw" }}
+        >
           <Image
             src={Astronaut}
-            height="70vh"
+            height={{ base: "240px", md: "420px" }}
             transform="rotate(-10deg)"
           ></Image>
         </Box>
 
         {/* Moon */}
-        <Box zIndex="-2" position="absolute" top="18vh" right="10vh">
-          <Image src={Moon} height="44vh" transform="rotate(55deg)"></Image>
+        <Box zIndex="-2" position="absolute" top="320px" right="14vw">
+          <Image
+            src={Moon}
+            height={{ base: "120px", md: "200px" }}
+            transform="rotate(55deg)"
+          ></Image>
         </Box>
       </Flex>
 
@@ -105,7 +124,7 @@ const Home = () => {
         alignItems="center"
         justifyContent="center"
         marginTop="8vh"
-        marginX="8vh"
+        marginX="8vw"
       >
         {/* Search Bar */}
         <InputGroup
@@ -116,12 +135,15 @@ const Home = () => {
         >
           <Input
             placeholder="What stories do you want to explore today..."
-            _placeholder={{ color: "#477DFE", opacity: 0.7, fontSize: "xl" }}
+            _placeholder={{ color: "white", opacity: 0.7 }}
+            fontSize={{ base: "md", md: "lg" }}
+            color="white"
             height="8vh"
-            shadow="lg"
+            shadow="md"
             borderRadius="full"
-            paddingX="2vw"
+            padding="20px 30px"
             variant="subtle"
+            bgColor="black"
             _hover={{
               border: "2px",
               borderColor: "#477DFE",
@@ -131,7 +153,7 @@ const Home = () => {
             <Button
               _hover={{ color: "#3465d8ff" }}
               variant="link"
-              color="#477DFE"
+              color="white"
               fontSize="2xl"
               onClick={handleSearchClick}
             >
@@ -141,39 +163,45 @@ const Home = () => {
         </InputGroup>
       </Flex>
 
-      {/* Card container */}
+      {/* Featured Stories */}
       <Flex
-        justifySelf="center"
-        marginTop="4vh"
-        direction="row"
-        gap={8}
-        overflowX="auto"
-        maxWidth="91vw"
-        height="40vh"
+        flexDir="column"
+        alignItems="center"
+        marginTop="6vh"
+        marginBottom="14vh"
       >
-        <ImageCard
-          imageUrl="https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg"
-          title="cat"
-          description="meowmeowmeowmeowmeow"
-        ></ImageCard>
-        <ImageCard
-          imageUrl="https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg"
-          title="cat"
-          description="meowmeowmeowmeowmeow"
-        ></ImageCard>
-        <ImageCard
-          imageUrl="https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg"
-          title="cat"
-          description="meowmeowmeowmeowmeow"
-        ></ImageCard>
-        <ImageCard
-          imageUrl="https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg"
-          title="cat"
-          description="meowmeowmeowmeowmeow"
-        ></ImageCard>
+        <Text
+          fontWeight="semibold"
+          mb="20px"
+          fontSize={{ base: "xl", md: "3xl" }}
+        >
+          Featured Stories
+        </Text>
+        {/* Card container */}
+        <Flex
+          flexDir={{ base: "column", md: "row" }}
+          gap={8}
+          justifyContent="center"
+          width="100%"
+          p="20px"
+        >
+          <ImageCard
+            imageUrl="https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg"
+            title="cat"
+            description="meowmeowmeowmeowmeow"
+          ></ImageCard>
+          <ImageCard
+            imageUrl="https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg"
+            title="cat"
+            description="meowmeowmeowmeowmeow"
+          ></ImageCard>
+          <ImageCard
+            imageUrl="https://c4.wallpaperflare.com/wallpaper/101/380/61/cat-animals-bokeh-cute-wallpaper-preview.jpg"
+            title="cat"
+            description="meowmeowmeowmeowmeow"
+          ></ImageCard>
+        </Flex>
       </Flex>
-
-      <Box bg="white" height="14vh" m={2}></Box>
 
       {/* Navigation Tabs */}
       <Flex
@@ -210,7 +238,7 @@ const Home = () => {
           <FaBookOpen />
         </IconButton>
       </Flex>
-    </>
+    </Flex>
   );
 };
 
