@@ -3,11 +3,11 @@ import { FaRobot } from "react-icons/fa";
 import { FaBookOpen } from "react-icons/fa6";
 import { IoIosRocket } from "react-icons/io";
 
-const BottomNavigation = ({ 
-  activeTab = "home", 
-  onRobotClick, 
-  onHomeClick, 
-  onLibraryClick 
+const BottomNavigation = ({
+  activeTab = "home",
+  onRobotClick,
+  onHomeClick,
+  onLibraryClick,
 }) => {
   return (
     <Flex
@@ -17,13 +17,13 @@ const BottomNavigation = ({
       width="100vw"
       shadow="inner"
       align="center"
-      justify="space-between"
+      justify="space-around"
       direction="row"
       paddingX="8vh"
       bg="white"
     >
-      <IconButton 
-        variant="link" 
+      <IconButton
+        variant="link"
         color={activeTab === "prompt" ? "#477DFE" : "gray.400"}
         fontSize="3xl"
         onClick={onRobotClick}
@@ -31,8 +31,8 @@ const BottomNavigation = ({
         <FaRobot />
       </IconButton>
 
-      <IconButton 
-        variant="link" 
+      <IconButton
+        variant="link"
         color={activeTab === "home" ? "#477DFE" : "gray.400"}
         fontSize="3xl"
         onClick={onHomeClick}
@@ -40,8 +40,8 @@ const BottomNavigation = ({
         <IoIosRocket />
       </IconButton>
 
-      <IconButton 
-        variant="link" 
+      <IconButton
+        variant="link"
         color={activeTab === "library" ? "#477DFE" : "gray.400"}
         fontSize="3xl"
         onClick={onLibraryClick}

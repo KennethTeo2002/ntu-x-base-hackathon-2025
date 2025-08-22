@@ -8,7 +8,7 @@ const Header = ({ onLogout }) => {
       align="center"
       justify="space-between"
       px="10vw"
-      py="30px"
+      py="20px"
       w="100%"
     >
       <Text

@@ -130,7 +130,7 @@ const Prompt = () => {
     <Box minH="100vh" bg={bgColor}>
       <Header />
 
-      <Container maxW="4xl" py={8} px={4}>
+      <Container maxW="4xl" py={8} px={4} mb="8vh">
         <VStack spacing={8} align="stretch">
           {/* Page Header */}
           <VStack spacing={4} textAlign="center">
