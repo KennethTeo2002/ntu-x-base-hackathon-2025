@@ -23,6 +23,11 @@ import BottomNavigation from "../components/BottomNavigation";
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
 
+const API_BASE =
+  import.meta?.env?.VITE_API_BASE_URL || //change
+  process.env.REACT_APP_API_BASE_URL ||
+  "http://localhost:5000";
+
 const Story = () => {
   const { storyId } = useParams();
   const navigate = useNavigate();
@@ -38,62 +43,69 @@ const Story = () => {
   const textColor = useColorModeValue("gray.800", "white");
   const subtitleColor = useColorModeValue("gray.600", "gray.300");
 
-  const loadStory = useCallback(async () => {
+  const loadStory = async () => {
     try {
       setLoading(true);
-
-      // For demo purposes, create a story based on the ID
-      // In real implementation, this would fetch from your API
-      const demoStory = {
-        id: storyId,
-        title:
-          storyId === "demo1"
-            ? "Elara's Equation"
-            : storyId === "demo2"
-            ? "The Cosmic Discovery"
-            : storyId === "demo3"
-            ? "Ocean's Secret"
-            : "Generated Story",
-        originalPrompt:
-          storyId === "demo1"
-            ? "Write me a story about a scientist who discovered gravity"
-            : storyId === "demo2"
-            ? "Tell me about a space adventure"
-            : storyId === "demo3"
-            ? "Create a story about ocean mysteries"
-            : "A magical adventure",
-        type: storyId.startsWith("demo") ? "borrowed" : "original",
-        created_at: new Date().toISOString(),
+  
+      // Try to fetch the story from your backend
+      const res = await fetch(`${API_BASE}/api/stories/${storyId}`, {
+        headers: { "Content-Type": "application/json" },
+        method: "GET",
+      });
+  
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+      const data = await res.json();
+  
+      // --- Normalization ---
+      // If your backend is already sending {id,title,originalPrompt,chapters:[{chapter,title,content,image_url}]}
+      // we can use it directly. If it's simpler (e.g., imageUrl + paragraph), adapt it here.
+      let normalizedStory = {
+        id: data.id || storyId,
+        title: data.title || "Generated Story",
+        originalPrompt: data.originalPrompt || data.prompt || "",
+        created_at: data.created_at || new Date().toISOString(),
+        type: "original",
       };
-
-      const demoChapters = [
-        {
-          chapter: 0,
-          title: "Chapter 0: The Discovery",
-          content:
-            storyId === "demo1"
-              ? "In the quiet halls of Cambridge University, Dr. Elara Voss worked late into the night, her calculations sprawling across multiple blackboards. The equations seemed to dance before her tired eyes, but something was different tonight. As she dropped her chalk and watched it fall, a profound realization struck her. The force that pulled the chalk to the ground was the same force that kept the planets in their orbits. She had discovered what would later be known as universal gravitation, though she didn't know it yet. Her heart raced as she began to understand the implications of her work."
-              : storyId === "demo2"
-              ? "Captain Maya Chen gazed out at the infinite expanse of stars from the bridge of the starship Horizon. Three years into their deep space mission, they had discovered something extraordinary - a signal from an unknown civilization. The rhythmic pulses seemed to contain mathematical patterns, almost like a cosmic equation waiting to be solved. As the ship's AI analyzed the data, Maya couldn't shake the feeling that this discovery would change humanity forever."
-              : "Dr. Sarah Martinez descended into the Mariana Trench in her state-of-the-art submersible. At depths where sunlight had never touched, her sonar detected something impossible - geometric structures too perfect to be natural. As she approached, bioluminescent creatures illuminated what appeared to be an ancient underwater city, its architecture unlike anything seen on Earth.",
-          image_url:
-            storyId === "demo1"
-              ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format"
-              : storyId === "demo2"
-              ? "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=800&h=600&fit=crop&auto=format"
-              : "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop&auto=format",
-        },
-      ];
-
-      setStory(demoStory);
-      setChapters(demoChapters);
+  
+      let normalizedChapters = Array.isArray(data.chapters) && data.chapters.length
+        ? data.chapters
+        : [
+            {
+              chapter: 0,
+              title: data.chapterTitle || "Chapter 0",
+              content: data.paragraph || data.content || "",
+              image_url: data.imageUrl || data.image_url || "",
+            },
+          ];
+  
+      setStory(normalizedStory);
+      setChapters(normalizedChapters);
       setCurrentChapter(0);
     } catch (error) {
       console.error("Error loading story:", error);
+  
+      // Optional: fallback if backend is down
+      setStory({
+        id: storyId,
+        title: "Generated Story",
+        originalPrompt: "",
+        created_at: new Date().toISOString(),
+        type: "original",
+      });
+      setChapters([
+        {
+          chapter: 0,
+          title: "Chapter 0",
+          content: "We couldn’t reach the server, but your page is working.",
+          image_url:
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format",
+        },
+      ]);
+      setCurrentChapter(0);
     } finally {
       setLoading(false);
     }
-  }, [storyId]);
+  };  
 
   useEffect(() => {
     loadStory();
