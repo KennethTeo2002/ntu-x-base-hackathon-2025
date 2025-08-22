@@ -85,11 +85,12 @@ const Prompt = () => {
       console.log("Generating story for:", prompt);
 
       const response = await ApiService.generateStory(prompt.trim());
+      console.log(response);
 
-      if (response.success) {
+      if (response) {
         // Navigate to results page with the generated story
         navigate("/prompt-result", {
-          state: { story: response.story },
+          state: { story: response.payload },
         });
       } else {
         throw new Error(response.message || "Failed to generate story");
