@@ -2,15 +2,20 @@ import { Box, Textarea, IconButton } from "@chakra-ui/react";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import "@fontsource/poppins";
 
-const PromptInput = ({
-  value,
-  onChange,
-  onSubmit,
+const PromptInput = ({ 
+  value, 
+  onChange, 
+  onSubmit, 
   isLoading = false,
-  placeholder = "Once upon a time...",
+  placeholder = "Once upon a time..." 
 }) => {
   return (
-    <Box position="relative" width="100%" maxWidth="800px" mb="8">
+    <Box
+      position="relative"
+      width="100%"
+      maxWidth="800px"
+      mb="8"
+    >
       <Textarea
         placeholder={placeholder}
         _placeholder={{ color: "gray.400", fontSize: "lg" }}
@@ -33,7 +38,7 @@ const PromptInput = ({
           boxShadow: "0 0 0 1px #477DFE",
         }}
       />
-
+      
       {/* Submit Button */}
       <IconButton
         position="absolute"
@@ -50,10 +55,10 @@ const PromptInput = ({
         _hover={{
           bg: "#3465d8",
         }}
-        zIndex="2"
       />
     </Box>
   );
 };
 
 export default PromptInput;
+

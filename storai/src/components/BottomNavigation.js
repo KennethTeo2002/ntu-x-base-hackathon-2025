@@ -53,4 +53,3 @@ const BottomNavigation = ({
 };
 
 export default BottomNavigation;
-
