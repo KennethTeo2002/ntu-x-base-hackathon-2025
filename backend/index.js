@@ -260,6 +260,9 @@ app.post("/create-story/:roomId", (req, res) => {
       originalPrompt: originalPrompt,
       chapters: [],
     };
+    console.log(
+      `Room with ID ${req.params.roomId} created successfully with title "${title}".`
+    );
     res.status(201).json({
       message: `Room with ID ${req.params.roomId} created successfully.`,
     });

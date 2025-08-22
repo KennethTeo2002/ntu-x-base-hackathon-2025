@@ -4,6 +4,7 @@ import {
   Box,
   Container,
   Text,
+  Input,
   Textarea,
   VStack,
   Button,
@@ -28,8 +29,10 @@ const Prompt = () => {
   const handleLibraryClick = () => navigate("/library");
   const location = useLocation();
   const toast = useToast();
+  const createStoryURL = `http://localhost:5000/create-story`;
 
   const [prompt, setPrompt] = useState("");
+  const [title, setTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const bgColor = useColorModeValue("gray.50", "gray.900");
@@ -55,7 +58,27 @@ const Prompt = () => {
     }
   }, [location.state]);
 
+  const generateStoryId = () => {
+    const randomNumber = Math.floor(Math.random() * 16777215);
+    let hexString = randomNumber.toString(16);
+    while (hexString.length < 6) {
+      hexString = "0" + hexString;
+    }
+    return hexString.toUpperCase();
+  };
+
   const handlePromptSubmit = async () => {
+    if (!title.trim()) {
+      toast({
+        title: "Title required",
+        description: "Please enter a title for your story.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     if (!prompt.trim()) {
       toast({
         title: "Prompt required",
@@ -81,6 +104,23 @@ const Prompt = () => {
 
     try {
       setIsLoading(true);
+      while (true) {
+        const roomId = generateStoryId();
+        const res = await fetch(`${createStoryURL}/${roomId}`, {
+          method: "POST", // Specify the HTTP method as POST
+          headers: {
+            "Content-Type": "application/json", // Set content type to JSON
+          },
+          // Convert the data to JSON string for the request body
+          body: JSON.stringify({
+            title: title,
+            originalPrompt: prompt,
+          }),
+        });
+        if (res.status === 201) {
+          break;
+        }
+      }
 
       console.log("Generating story for:", prompt);
 
@@ -121,12 +161,6 @@ const Prompt = () => {
 
   const hoverBg = useColorModeValue("gray.100", "gray.700");
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && e.ctrlKey) {
-      handlePromptSubmit();
-    }
-  };
-
   return (
     <Box minH="100vh" bg={bgColor}>
       <Header />
@@ -147,11 +181,24 @@ const Prompt = () => {
           <Box bg={cardBg} rounded="2xl" shadow="lg" p={8}>
             <VStack spacing={6} align="stretch">
               <Box position="relative">
+                <Input
+                  placeholder="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  size="lg"
+                  border="2px"
+                  borderColor={borderColor}
+                  _focus={{
+                    borderColor: "blue.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+                  }}
+                  fontSize="md"
+                  mb="10px"
+                />
                 <Textarea
                   placeholder="Once upon a time..."
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  onKeyPress={handleKeyPress}
                   size="lg"
                   minH="200px"
                   resize="vertical"
@@ -190,9 +237,6 @@ const Prompt = () => {
                   >
                     Clear
                   </Button>
-                  <Text fontSize="xs" color={subtitleColor}>
-                    Ctrl + Enter to submit
-                  </Text>
                 </HStack>
 
                 <Button
