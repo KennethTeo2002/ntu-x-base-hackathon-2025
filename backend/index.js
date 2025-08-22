@@ -49,6 +49,7 @@ const getImageUrls = async (imagePromptText) => {
 };
 
 const generateStoryPart = async (currentStoryContext, userChoice) => {
+  console.log("gemini prompt \n%s", currentStoryContext);
   // Construct the prompt for the Gemini API
   let promptText = `You are a "Choose Your Own Adventure" story generator.
         Continue the story based on the context provided. After each story segment,
@@ -115,7 +116,7 @@ const generateStoryPart = async (currentStoryContext, userChoice) => {
       ) {
         const rawText = result.candidates[0].content.parts[0].text;
         // Parse the raw text into story content and choices
-        console.log("gemini produced \n%s", rawText);
+
         const { story, choices } = parseGeminiResponse(rawText);
         const sogniPrompt = await generateImagePrompt(story);
         const imageURL = await getImageUrls(sogniPrompt);

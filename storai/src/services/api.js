@@ -31,14 +31,6 @@ export const ApiService = {
     });
   },
 
-  // Generate next chapter
-  async generateNextChapter(storyId, currentStory) {
-    return await apiCall("/stories/next-chapter", {
-      method: "POST",
-      body: JSON.stringify({ storyId, currentStory }),
-    });
-  },
-
   // Save story to library
   async saveStory(story) {
     return await apiCall("/stories/save", {
