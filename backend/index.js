@@ -11,7 +11,7 @@ const SOGNIUSERNAME = process.env.SOGNI_USERNAME;
 const SOGNIPASSWORD = process.env.SOGNI_PASSWORD;
 
 const getImageUrls = async (imagePromptText) => {
-  console.log(imagePromptText);
+  const cleanedPrompt = imagePromptText.replace(/[\[\]]/g, "");
   const options = {
     appId: "your-app-id", // Required, must be unique string, UUID is recommended
     network: "fast", // Network to use, 'fast' or 'relaxed'
@@ -31,7 +31,7 @@ const getImageUrls = async (imagePromptText) => {
     modelId: mostPopularModel.id,
     steps: 20,
     guidance: 7.5,
-    positivePrompt: { imagePromptText },
+    positivePrompt: cleanedPrompt,
     negativePrompt:
       "malformation, bad anatomy, bad hands, missing fingers, cropped, low quality, bad quality, jpeg artifacts, watermark",
     stylePrompt: "realistic",
@@ -111,6 +111,7 @@ const generateStoryPart = async (currentStoryContext, userChoice) => {
     ) {
       const rawText = result.candidates[0].content.parts[0].text;
       // Parse the raw text into story content and choices
+      console.log("gemini produced %s", rawText);
       const { story, choices } = parseGeminiResponse(rawText);
       const sogniPrompt = await generateImagePrompt(story);
       const imageURL = await getImageUrls(sogniPrompt);
@@ -199,6 +200,7 @@ const generateImagePrompt = async (currentStoryContext) => {
       result.candidates[0].content.parts.length > 0
     ) {
       const rawText = result.candidates[0].content.parts[0].text;
+      console.log("the prompt is %s", rawText);
       return rawText;
     } else {
       console.error("Gemini API response structure unexpected:", result);
@@ -236,7 +238,7 @@ setInterval(() => {
 // Generate a story: TODO @Kenneth
 app.get("/generate", async (req, res) => {
   console.log("Received request to generate a story");
-  const { prompt } = req.query;
+  const { prompt } = req.body;
   const urls = await generateStoryPart(prompt);
   return res.status(200).json({
     url: urls,
