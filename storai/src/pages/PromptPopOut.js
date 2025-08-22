@@ -55,13 +55,14 @@ const PromptPopOut = () => {
 
   useEffect(() => {
     // Get story data from navigation state or localStorage
-    console.log(location);
+
     const storyData =
       location.state?.story ||
       JSON.parse(localStorage.getItem("currentStory") || "null");
+
     setStoryId(location.state.storyId);
     setPrompt(location.state.prompt);
-
+    storyData.cumulativeStory = location.state.prompt + storyData.storyline;
     fetch(`${uploadStoryURL}/${location.state.storyId}`, {
       method: "POST", // Specify the HTTP method as POST
       headers: {
@@ -90,26 +91,19 @@ const PromptPopOut = () => {
     try {
       setIsGeneratingNext(true);
 
-      const response = await ApiService.generateNextChapter(story.id, story);
+      const response = await ApiService.generateStory(story.cumulativeStory);
 
-      if (response.success) {
+      if (response) {
         const updatedStory = {
-          ...story,
-          chapter: response.chapter.chapter,
-          content: response.chapter.content,
-          image_url: response.chapter.image_url,
+          cumulativeStory: story.storyline + response.payload.storyline,
+          storyline: response.payload.storyline,
+          choices: response.payload.choices,
+          imageURL: response.payload.imageURL,
         };
 
         setStory(updatedStory);
+        console.log("updated story", updatedStory.cumulativeStory);
         localStorage.setItem("currentStory", JSON.stringify(updatedStory));
-
-        toast({
-          title: "Next chapter generated!",
-          description: `Chapter ${response.chapter.chapter} is ready to read.`,
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
       }
     } catch (error) {
       console.error("Error generating next chapter:", error);
@@ -207,16 +201,6 @@ const PromptPopOut = () => {
                   </Box>
 
                   <Divider />
-
-                  {/* AI Response to Prompt */}
-                  <Box>
-                    <Text fontSize="sm" color={subtitleColor} mb={2}>
-                      Stor.ai's interpretation:
-                    </Text>
-                    <Text fontSize="sm" color={textColor} lineHeight="1.6">
-                      {story.storyline}
-                    </Text>
-                  </Box>
 
                   {/* Chat with Stor.ai Button */}
                   <Button
