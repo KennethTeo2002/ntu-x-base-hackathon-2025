@@ -8,19 +8,20 @@ dotenv.config({
 
 const port = process.env.PORT || 5000;
 const SOGNIUSERNAME = process.env.SOGNI_USERNAME;
-const PASSWORD = process.env.SOGNI_PASSWORD;
-const options = {
-  appId: "your-app-id", // Required, must be unique string, UUID is recommended
-  network: "fast", // Network to use, 'fast' or 'relaxed'
-};
+const SOGNIPASSWORD = process.env.SOGNI_PASSWORD;
 
-const getImageUrls = async () => {
+const getImageUrls = async (imagePromptText) => {
+  console.log(imagePromptText);
+  const options = {
+    appId: "your-app-id", // Required, must be unique string, UUID is recommended
+    network: "fast", // Network to use, 'fast' or 'relaxed'
+  };
   const client = await SogniClient.createInstance(options);
   // Login to Sogni account and establish WebSocket connection to Supernet
-  await client.account.login(SOGNIUSERNAME, PASSWORD);
+  await client.account.login(SOGNIUSERNAME, SOGNIPASSWORD);
   // Now wait until list of available models is received.
   // This step is only needed if you want to create project immediately.
-  const models = await client.projects.waitForModels();
+  await client.projects.waitForModels();
 
   const mostPopularModel = client.projects.availableModels.reduce((a, b) =>
     a.workerCount > b.workerCount ? a : b
@@ -30,7 +31,7 @@ const getImageUrls = async () => {
     modelId: mostPopularModel.id,
     steps: 20,
     guidance: 7.5,
-    positivePrompt: "a robot eating a bowl of noodles in a futuristic city",
+    positivePrompt: { imagePromptText },
     negativePrompt:
       "malformation, bad anatomy, bad hands, missing fingers, cropped, low quality, bad quality, jpeg artifacts, watermark",
     stylePrompt: "realistic",
@@ -44,6 +45,167 @@ const getImageUrls = async () => {
   const imageUrls = await project.waitForCompletion();
   console.log("Image URLs:", imageUrls);
   return imageUrls;
+};
+
+const generateStoryPart = async (currentStoryContext, userChoice) => {
+  // Construct the prompt for the Gemini API
+  let promptText = `You are a "Choose Your Own Adventure" story generator.
+        Continue the story based on the context provided. After each story segment,
+        always provide exactly 2 or 3 distinct choices for the user to make.
+        Format your response as follows:
+        ---STORY_START---
+        [Your generated story segment here, limit it to between 2 and 4 sentences. Make it engaging!]
+        ---CHOICES_START---
+        1. [Choice Option 1]
+        2. [Choice Option 2]
+        3. [Choice Option 3 - Optional, provide 2 or 3 total]
+        ---END---
+
+        Current Story Context:
+        ${currentStoryContext}`;
+
+  if (userChoice) {
+    promptText += `\nUser's last choice: "${userChoice}"`;
+  } else {
+    promptText += `\nThis is the beginning of the story.`;
+  }
+
+  // Construct the payload for the Gemini API call
+  const payload = {
+    contents: [{ parts: [{ text: promptText }] }],
+    generationConfig: {
+      temperature: 0.9,
+      topK: 40,
+      topP: 0.9,
+      maxOutputTokens: 500,
+    },
+  };
+
+  const apiKey = process.env.GEMINI_APIKEY;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `API error: ${response.status} - ${
+          errorData.error.message || response.statusText
+        }`
+      );
+    }
+
+    const result = await response.json();
+
+    if (
+      result.candidates &&
+      result.candidates.length > 0 &&
+      result.candidates[0].content &&
+      result.candidates[0].content.parts &&
+      result.candidates[0].content.parts.length > 0
+    ) {
+      const rawText = result.candidates[0].content.parts[0].text;
+      // Parse the raw text into story content and choices
+      const { story, choices } = parseGeminiResponse(rawText);
+      const sogniPrompt = await generateImagePrompt(story);
+      const imageURL = await getImageUrls(sogniPrompt);
+      return imageURL, choices;
+    } else {
+      console.error("Gemini API response structure unexpected:", result);
+    }
+  } catch (error) {
+    console.error("Failed to fetch from Gemini API:", error);
+  }
+};
+const parseGeminiResponse = (rawText) => {
+  let story = "An error occurred while parsing the story.";
+  let choices = [];
+
+  // Regular expressions to extract story and choices based on defined delimiters
+  const storyMatch = rawText.match(
+    /---STORY_START---\s*([\s\S]*?)\s*---CHOICES_START---/
+  );
+  const choicesMatch = rawText.match(
+    /---CHOICES_START---\s*([\s\S]*?)\s*---END---/
+  );
+
+  if (storyMatch && storyMatch[1]) {
+    story = storyMatch[1].trim();
+  }
+
+  if (choicesMatch && choicesMatch[1]) {
+    // Split choices by new line and filter out empty strings
+    choices = choicesMatch[1]
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && /^\d+\./.test(line)) // Ensure it's a numbered choice
+      .map((line) => line.replace(/^\d+\.\s*/, "")); // Remove the numbering (e.g., "1. ")
+  }
+  return { story, choices };
+};
+
+const generateImagePrompt = async (currentStoryContext) => {
+  // Construct the prompt for the Gemini API
+  let promptText = `You are a "Choose Your Own Adventure" story generator.
+        Based on the current story segment, give me a relevant shortened prompt input that I can use to generate a picture with 
+        Format your response as follows:
+        [short prompt description about story segment]
+
+        Current Story Context:
+        ${currentStoryContext}`;
+
+  // Construct the payload for the Gemini API call
+  const payload = {
+    contents: [{ parts: [{ text: promptText }] }],
+    generationConfig: {
+      temperature: 0.9,
+      topK: 40,
+      topP: 0.9,
+      maxOutputTokens: 500,
+    },
+  };
+
+  const apiKey = process.env.GEMINI_APIKEY;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `API error: ${response.status} - ${
+          errorData.error.message || response.statusText
+        }`
+      );
+    }
+
+    const result = await response.json();
+
+    if (
+      result.candidates &&
+      result.candidates.length > 0 &&
+      result.candidates[0].content &&
+      result.candidates[0].content.parts &&
+      result.candidates[0].content.parts.length > 0
+    ) {
+      const rawText = result.candidates[0].content.parts[0].text;
+      return rawText;
+    } else {
+      console.error("Gemini API response structure unexpected:", result);
+    }
+  } catch (error) {
+    console.error("Failed to fetch from Gemini API:", error);
+  }
 };
 
 const app = express();
@@ -74,7 +236,8 @@ setInterval(() => {
 // Generate a story: TODO @Kenneth
 app.get("/generate", async (req, res) => {
   console.log("Received request to generate a story");
-  const urls = await getImageUrls();
+  const { prompt } = req.query;
+  const urls = await generateStoryPart(prompt);
   return res.status(200).json({
     url: urls,
   });
