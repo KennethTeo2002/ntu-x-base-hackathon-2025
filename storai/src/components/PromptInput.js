@@ -42,6 +42,7 @@ const PromptInput = ({
       {/* Submit Button */}
       <IconButton
         position="absolute"
+        z-index="1"
         bottom="4"
         right="4"
         icon={<ChevronRightIcon />}

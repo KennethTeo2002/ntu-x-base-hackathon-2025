@@ -34,7 +34,7 @@ const StoryPreviewCard = ({ story, onClick }) => {
 
   return (
     <Card
-      bg={cardBg}
+      bg={"cardBg"}
       shadow="md"
       cursor="pointer"
       onClick={onClick}
@@ -144,13 +144,13 @@ const Home = () => {
     <Box minH="100vh" bg={bgColor}>
       <Header />
 
-      <Container maxW="7xl" py={8} px={4}>
+      <Container maxW="7xl" py={8} px={4} mb="8vh">
         <VStack spacing={12} align="stretch">
           {/* Hero Section */}
-          <VStack spacing={6} textAlign="center" py={8}>
+          <VStack spacing={6} textAlign="center" py={8} paddingY="18vh">
             <Box position="relative">
               <Heading
-                size="3xl"
+                size={{ base: "2xl", md: "3xl" }}
                 color={textColor}
                 fontWeight="bold"
                 lineHeight="1.2"
@@ -158,7 +158,7 @@ const Home = () => {
                 Build new worlds.
               </Heading>
               <Heading
-                size="3xl"
+                size={{ base: "2xl", md: "3xl" }}
                 color={textColor}
                 fontWeight="bold"
                 lineHeight="1.2"
@@ -179,7 +179,7 @@ const Home = () => {
             </Box>
 
             {/* Search Bar */}
-            <Box w="100%" maxW="2xl">
+            <Box w="100%" maxW={{ base: "76vw", md: "2xl" }} mt="2vw">
               <InputGroup size="lg">
                 <Input
                   placeholder="What stories do you want to explore today..."
@@ -194,7 +194,7 @@ const Home = () => {
                     boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
                   }}
                   rounded="full"
-                  fontSize="md"
+                  fontSize={{ base: "sm", md: "md" }}
                 />
                 <InputRightElement>
                   <IconButton

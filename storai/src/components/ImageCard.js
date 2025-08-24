@@ -12,7 +12,7 @@ function ImageCard({
   return (
     <Box
       minW="30vw"
-      height="36vh"
+      height={{ base: "280px", md: "36vh" }}
       borderWidth={variant === "outline" ? "1px" : "0px"}
       borderRadius="30px"
       overflow="hidden"
@@ -31,10 +31,10 @@ function ImageCard({
       />
 
       {/* Content Section */}
-      <Box p="6">
+      <Box px="20px">
         {/* Tags */}
         {tags.length > 0 && (
-          <Flex gap="2" mb="2">
+          <Flex gap="2">
             {tags.map((tag) => (
               <Badge key={tag} colorScheme="purple">
                 {tag}
@@ -42,16 +42,21 @@ function ImageCard({
             ))}
           </Flex>
         )}
+        <Flex
+          flexDir="column"
+          justifyContent="space-between"
+          mt={{ base: "16px", md: "14px" }}
+        >
+          {/* Title */}
+          <Heading as="h3" size="md">
+            {title}
+          </Heading>
 
-        {/* Title */}
-        <Heading as="h3" size="md" mb="2">
-          {title}
-        </Heading>
-
-        {/* Description */}
-        <Text color="gray.600" mb="4" noOfLines={3}>
-          {description}
-        </Text>
+          {/* Description */}
+          <Text color="gray.600" noOfLines={3}>
+            {description}
+          </Text>
+        </Flex>
       </Box>
     </Box>
   );

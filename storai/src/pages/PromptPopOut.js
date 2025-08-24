@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
@@ -20,6 +20,7 @@ import {
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import ApiService from "../services/api";
+import { FaRegCopy } from "react-icons/fa";
 
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
@@ -30,7 +31,10 @@ const PromptPopOut = () => {
   const handleLibraryClick = () => navigate("/library");
   const location = useLocation();
   const toast = useToast();
+  const uploadStoryURL = "http://localhost:5000/upload";
 
+  const [storyId, setStoryId] = useState();
+  const [prompt, setPrompt] = useState();
   const [story, setStory] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingNext, setIsGeneratingNext] = useState(false);
@@ -42,11 +46,34 @@ const PromptPopOut = () => {
   const subtitleColor = useColorModeValue("gray.600", "gray.300");
   const promptBg = useColorModeValue("gray.100", "gray.700");
 
+  // storyData
+  // {
+  //   "storyline": "paragraph",
+  //   "imageURL": "http://oneurl",
+  //   "choices": ["a", "b", "c"]
+  // }
+
   useEffect(() => {
     // Get story data from navigation state or localStorage
+
     const storyData =
       location.state?.story ||
       JSON.parse(localStorage.getItem("currentStory") || "null");
+
+    setStoryId(location.state.storyId);
+    setPrompt(location.state.prompt);
+    storyData.cumulativeStory = location.state.prompt + storyData.storyline;
+    fetch(`${uploadStoryURL}/${location.state.storyId}`, {
+      method: "POST", // Specify the HTTP method as POST
+      headers: {
+        "Content-Type": "application/json", // Set content type to JSON
+      },
+      // Convert the data to JSON string for the request body
+      body: JSON.stringify({
+        url: storyData.imageURL,
+        text: storyData.storyline,
+      }),
+    });
 
     if (storyData) {
       setStory(storyData);
@@ -64,26 +91,19 @@ const PromptPopOut = () => {
     try {
       setIsGeneratingNext(true);
 
-      const response = await ApiService.generateNextChapter(story.id, story);
+      const response = await ApiService.generateStory(story.cumulativeStory);
 
-      if (response.success) {
+      if (response) {
         const updatedStory = {
-          ...story,
-          chapter: response.chapter.chapter,
-          content: response.chapter.content,
-          image_url: response.chapter.image_url,
+          cumulativeStory: story.storyline + response.payload.storyline,
+          storyline: response.payload.storyline,
+          choices: response.payload.choices,
+          imageURL: response.payload.imageURL,
         };
 
         setStory(updatedStory);
+        console.log("updated story", updatedStory.cumulativeStory);
         localStorage.setItem("currentStory", JSON.stringify(updatedStory));
-
-        toast({
-          title: "Next chapter generated!",
-          description: `Chapter ${response.chapter.chapter} is ready to read.`,
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
       }
     } catch (error) {
       console.error("Error generating next chapter:", error);
@@ -162,7 +182,7 @@ const PromptPopOut = () => {
     <Box minH="100vh" bg={bgColor}>
       <Header />
 
-      <Container maxW="6xl" py={8} px={4}>
+      <Container maxW="6xl" py={8} px={4} mb="8vh">
         <Flex gap={8} direction={{ base: "column", lg: "row" }}>
           {/* Left Side - User Prompt & Chat */}
           <Box w={{ base: "100%", lg: "400px" }} flexShrink={0}>
@@ -176,30 +196,11 @@ const PromptPopOut = () => {
 
                   <Box bg={promptBg} rounded="lg" p={4}>
                     <Text fontSize="md" color={textColor} fontStyle="italic">
-                      "{story.prompt}"
+                      {prompt}
                     </Text>
                   </Box>
 
                   <Divider />
-
-                  {/* AI Response to Prompt */}
-                  <Box>
-                    <Text fontSize="sm" color={subtitleColor} mb={2}>
-                      Stor.ai's interpretation:
-                    </Text>
-                    <Text fontSize="sm" color={textColor} lineHeight="1.6">
-                      {story.prompt.toLowerCase().includes("scientist") &&
-                      story.prompt.toLowerCase().includes("gravity")
-                        ? "I see you want a story about scientific discovery! I've created a narrative where gravity isn't yet understood, and a scientist rediscovers it through observation and experimentation. The story balances scientific curiosity with human drama."
-                        : story.prompt.toLowerCase().includes("space") ||
-                          story.prompt.toLowerCase().includes("cosmic")
-                        ? "A space adventure it is! I've crafted a story about deep space exploration and first contact with an unknown civilization. The narrative focuses on discovery, wonder, and the implications of finding we're not alone."
-                        : story.prompt.toLowerCase().includes("ocean") ||
-                          story.prompt.toLowerCase().includes("underwater")
-                        ? "An oceanic mystery awaits! I've created a story about deep sea exploration and the discovery of something extraordinary in the depths. The narrative combines scientific exploration with ancient mysteries."
-                        : `Based on your prompt "${story.prompt}", I've created an engaging story that captures the essence of your idea while adding creative elements to make it compelling and immersive.`}
-                    </Text>
-                  </Box>
 
                   {/* Chat with Stor.ai Button */}
                   <Button
@@ -211,42 +212,6 @@ const PromptPopOut = () => {
                   >
                     Chat with Stor.ai
                   </Button>
-                </VStack>
-              </Box>
-
-              {/* Story Metadata */}
-              <Box bg={cardBg} rounded="xl" shadow="md" p={6}>
-                <VStack align="stretch" spacing={3}>
-                  <Heading size="sm" color={textColor}>
-                    Story Details
-                  </Heading>
-
-                  <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>
-                      Type:
-                    </Text>
-                    <Badge colorScheme="blue" variant="subtle">
-                      {story.type === "original" ? "Original" : "Generated"}
-                    </Badge>
-                  </HStack>
-
-                  <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>
-                      Chapter:
-                    </Text>
-                    <Text fontSize="sm" color={textColor} fontWeight="medium">
-                      {story.chapter}
-                    </Text>
-                  </HStack>
-
-                  <HStack justify="space-between">
-                    <Text fontSize="sm" color={subtitleColor}>
-                      Created:
-                    </Text>
-                    <Text fontSize="sm" color={textColor}>
-                      {new Date(story.created_at).toLocaleDateString()}
-                    </Text>
-                  </HStack>
                 </VStack>
               </Box>
             </VStack>
@@ -262,7 +227,7 @@ const PromptPopOut = () => {
                     {story.title}
                   </Heading>
                   <Text color="blue.500" fontSize="lg" fontWeight="medium">
-                    Chapter {story.chapter}
+                    Chapter 1
                   </Text>
                 </VStack>
               </Box>
@@ -270,7 +235,7 @@ const PromptPopOut = () => {
               {/* Story Image - Fixed sizing */}
               <Box position="relative" w="100%" h="400px" overflow="hidden">
                 <Image
-                  src={story.image_url}
+                  src={story.imageURL}
                   alt={`${story.title} - Chapter ${story.chapter}`}
                   w="100%"
                   h="100%"
@@ -307,7 +272,7 @@ const PromptPopOut = () => {
                   whiteSpace="pre-wrap"
                   textAlign="justify"
                 >
-                  {story.content}
+                  {story.storyline}
                 </Text>
               </Box>
 
@@ -319,7 +284,6 @@ const PromptPopOut = () => {
                     variant="outline"
                     size="lg"
                     flex={1}
-                    maxW="200px"
                     onClick={handleNextChapter}
                     isLoading={isGeneratingNext}
                     loadingText="Generating..."
@@ -329,15 +293,23 @@ const PromptPopOut = () => {
                   </Button>
                   <Button
                     colorScheme="blue"
+                    rightIcon={<FaRegCopy />}
                     size="lg"
                     flex={1}
-                    maxW="200px"
-                    onClick={handleSaveStory}
-                    isLoading={isSaving}
-                    loadingText="Saving..."
-                    isDisabled={isLoading || isGeneratingNext}
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `http://${window.location.hostname}:3000/story/${storyId}`
+                      );
+                      toast({
+                        title: "Link copied!",
+                        description: `You can now share this story with your friends.`,
+                        status: "success",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }}
                   >
-                    Save
+                    Copy Shareable Link
                   </Button>
                 </HStack>
               </Box>
