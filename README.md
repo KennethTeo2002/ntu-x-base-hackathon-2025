@@ -1,4 +1,4 @@
-# NTU X Base Hackathon 2025
+# NTU X Base Web3 Hackathon 2025
 ## Problem Statement
 Generative AI has immense potential to solve creative problems, yet many consumers struggle to access high-quality AI experiences outside of centralized, paywalled
 platforms. Build a web-based application that solves a real consumer problem by integrating the Sogni SDK. Your app should use Sogni's decentralized AI art infrastructure to generate high quality, creative outputs.
