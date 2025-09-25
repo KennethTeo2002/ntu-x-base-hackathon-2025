@@ -137,6 +137,7 @@ const generateStoryPart = async (currentStoryContext, userChoice) => {
     }
   }
 };
+
 const parseGeminiResponse = (rawText) => {
   let story = "An error occurred while parsing the story.";
   let choices = [];
@@ -261,7 +262,6 @@ setInterval(() => {
   );
 }, CLEAR_INTERVAL_MS);
 
-// Generate a story: TODO @Kenneth
 app.post("/generate", async (req, res) => {
   console.log("Received request to generate a story");
   const { prompt, choice } = req.body;
@@ -269,6 +269,20 @@ app.post("/generate", async (req, res) => {
   return res.status(200).json({
     payload: story,
   });
+});
+
+app.post("/regenerate-image", async (req, res) => {
+  const { storyline } = req.body;
+  if (!storyline) {
+    return res.status(400).json({ message: "Storyline is required." });
+  }
+  try {
+    const sogniPrompt = await generateImagePrompt(storyline);
+    const imageURL = await getImageUrls(sogniPrompt);
+    res.status(200).json({ imageURL });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to regenerate image." });
+  }
 });
 
 app.post("/create-story/:storyId", (req, res) => {
