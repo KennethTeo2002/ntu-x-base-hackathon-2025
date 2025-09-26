@@ -14,13 +14,15 @@ import {
   Spinner,
   Center,
   useToast,
-  Badge,
   Divider,
+  Textarea,
+  IconButton,
 } from "@chakra-ui/react";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import ApiService from "../services/api";
 import { FaRegCopy } from "react-icons/fa";
+import { EditIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
 
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
@@ -39,6 +41,9 @@ const PromptPopOut = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingNext, setIsGeneratingNext] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedStoryline, setEditedStoryline] = useState("");
+  const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
 
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const cardBg = useColorModeValue("white", "gray.800");
@@ -85,6 +90,60 @@ const PromptPopOut = () => {
     }
   }, [location.state, navigate]);
 
+  const handleRegenerateImage = async () => {
+    setIsRegeneratingImage(true);
+    try {
+      const response = await fetch("http://localhost:5000/regenerate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storyline: editedStoryline }),
+      });
+      if (!response.ok) throw new Error("Failed to regenerate image");
+      const data = await response.json();
+      setStory((prev) => {
+        // Split the cumulativeStory into all previous storylines except the last one
+        let previousParts = [];
+        if (prev.cumulativeStory && prev.storyline) {
+          // Try to split cumulativeStory by the last occurrence of prev.storyline
+          const idx = prev.cumulativeStory.lastIndexOf(prev.storyline);
+          if (idx !== -1) {
+            previousParts = [prev.cumulativeStory.slice(0, idx)];
+          } else {
+            previousParts = [prev.cumulativeStory];
+          }
+        }
+        // Rebuild cumulativeStory with all previous + edited
+        const newCumulative =
+          (previousParts.length > 0 ? previousParts[0] : "") + editedStoryline;
+
+        return {
+          ...prev,
+          storyline: editedStoryline,
+          imageURL: data.imageURL[0],
+          cumulativeStory: newCumulative,
+        };
+      });
+      setIsEditing(false);
+      toast({
+        title: "Story updated!",
+        description: "Image regenerated for your edited storyline.",
+        status: "success",
+        duration: 2500,
+        isClosable: true,
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to regenerate image. Please try again.",
+        status: "error",
+        duration: 2500,
+        isClosable: true,
+      });
+    } finally {
+      setIsRegeneratingImage(false);
+    }
+  };
+
   const handleNextChapter = async () => {
     if (!story) return;
 
@@ -94,8 +153,12 @@ const PromptPopOut = () => {
       const response = await ApiService.generateStory(story.cumulativeStory);
 
       if (response) {
+        const updatedCumulative =
+          (story.cumulativeStory || "") + response.payload.storyline;
+
         const updatedStory = {
-          cumulativeStory: story.storyline + response.payload.storyline,
+          ...story,
+          cumulativeStory: updatedCumulative,
           storyline: response.payload.storyline,
           choices: response.payload.choices,
           imageURL: response.payload.imageURL,
@@ -265,15 +328,66 @@ const PromptPopOut = () => {
 
               {/* Story Content */}
               <Box p={6}>
-                <Text
-                  fontSize="lg"
-                  lineHeight="1.8"
-                  color={textColor}
-                  whiteSpace="pre-wrap"
-                  textAlign="justify"
-                >
-                  {story.storyline}
-                </Text>
+                <Flex justify="space-between" align="center" mb={2}>
+                  <Text fontWeight="bold" fontSize="lg">
+                    Storyline
+                  </Text>
+                  {!isEditing ? (
+                    <IconButton
+                      aria-label="Edit"
+                      icon={<EditIcon />}
+                      size="sm"
+                      onClick={() => {
+                        setEditedStoryline(story.storyline);
+                        setIsEditing(true);
+                      }}
+                      isDisabled={isLoading || isGeneratingNext || isSaving}
+                    />
+                  ) : null}
+                </Flex>
+                {!isEditing ? (
+                  <Text
+                    fontSize="lg"
+                    lineHeight="1.8"
+                    color={textColor}
+                    whiteSpace="pre-wrap"
+                    textAlign="justify"
+                  >
+                    {story.storyline}
+                  </Text>
+                ) : (
+                  <Box>
+                    <Textarea
+                      value={editedStoryline}
+                      onChange={(e) => setEditedStoryline(e.target.value)}
+                      fontSize="lg"
+                      minH="120px"
+                      mb={2}
+                      isDisabled={isRegeneratingImage}
+                    />
+                    <HStack>
+                      <Button
+                        colorScheme="blue"
+                        leftIcon={<CheckIcon />}
+                        onClick={handleRegenerateImage}
+                        isLoading={isRegeneratingImage}
+                        loadingText="Regenerating..."
+                        size="sm"
+                      >
+                        Save & Regenerate Image
+                      </Button>
+                      <Button
+                        leftIcon={<CloseIcon />}
+                        onClick={() => setIsEditing(false)}
+                        variant="ghost"
+                        size="sm"
+                        isDisabled={isRegeneratingImage}
+                      >
+                        Cancel
+                      </Button>
+                    </HStack>
+                  </Box>
+                )}
               </Box>
 
               {/* Action Buttons */}
