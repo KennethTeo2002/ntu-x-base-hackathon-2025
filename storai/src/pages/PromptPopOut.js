@@ -39,6 +39,10 @@ const PromptPopOut = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingNext, setIsGeneratingNext] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [chapterCount, setChapterCount] = useState(
+    location.state?.settings?.chapterCount || 5
+  );
+  const [currentChapter, setCurrentChapter] = useState(1);
 
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const cardBg = useColorModeValue("white", "gray.800");
@@ -83,26 +87,41 @@ const PromptPopOut = () => {
       // Redirect back to prompt if no story data
       navigate("/prompt");
     }
+
+    // If chapterCount is passed from settings, use it
+    if (location.state?.settings?.chapterCount) {
+      setChapterCount(location.state.settings.chapterCount);
+    }
+    setCurrentChapter(1);
   }, [location.state, navigate]);
 
   const handleNextChapter = async () => {
     if (!story) return;
 
+    // Calculate chapters left
+    const chaptersLeft = chapterCount - currentChapter;
+
     try {
       setIsGeneratingNext(true);
 
-      const response = await ApiService.generateStory(story.cumulativeStory);
+      // Build a prompt that tells the AI how many chapters are left
+      const aiPrompt =
+        story.cumulativeStory +
+        `\nThere are ${chaptersLeft} chapters left. Please continue the story and make sure to wrap up the plot by chapter ${chapterCount}.`;
+
+      const response = await ApiService.generateStory(aiPrompt);
 
       if (response) {
         const updatedStory = {
-          cumulativeStory: story.storyline + response.payload.storyline,
+          cumulativeStory: story.cumulativeStory + response.payload.storyline,
           storyline: response.payload.storyline,
           choices: response.payload.choices,
           imageURL: response.payload.imageURL,
+          title: story.title,
         };
 
         setStory(updatedStory);
-        console.log("updated story", updatedStory.cumulativeStory);
+        setCurrentChapter((prev) => prev + 1);
         localStorage.setItem("currentStory", JSON.stringify(updatedStory));
       }
     } catch (error) {
@@ -181,7 +200,6 @@ const PromptPopOut = () => {
   return (
     <Box minH="100vh" bg={bgColor}>
       <Header />
-
       <Container maxW="6xl" py={8} px={4} mb="8vh">
         <Flex gap={8} direction={{ base: "column", lg: "row" }}>
           {/* Left Side - User Prompt & Chat */}
@@ -227,7 +245,10 @@ const PromptPopOut = () => {
                     {story.title}
                   </Heading>
                   <Text color="blue.500" fontSize="lg" fontWeight="medium">
-                    Chapter 1
+                    Chapter {currentChapter}
+                  </Text>
+                  <Text fontSize="sm" color={subtitleColor}>
+                    {chapterCount - currentChapter} chapters left
                   </Text>
                 </VStack>
               </Box>
