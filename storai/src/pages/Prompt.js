@@ -23,10 +23,11 @@ import {
   NumberDecrementStepper,
   IconButton,
 } from "@chakra-ui/react";
-import { ArrowForwardIcon, RepeatIcon, SettingsIcon } from "@chakra-ui/icons";
+import { ArrowForwardIcon, RepeatIcon } from "@chakra-ui/icons";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import ApiService from "../services/api";
+import { FaSlidersH } from "react-icons/fa";
 
 import "@fontsource/poppins"; // Defaults to weight 400
 import "@fontsource/merriweather"; // Defaults to weight 400
@@ -44,7 +45,6 @@ const Prompt = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [historicalRestriction, setHistoricalRestriction] = useState(false);
-  const [fictionalRestriction, setFictionalRestriction] = useState(false);
   const [chapterCount, setChapterCount] = useState(5);
 
   const bgColor = useColorModeValue("gray.50", "gray.900");
@@ -84,8 +84,7 @@ const Prompt = () => {
     if (historicalRestriction) {
       restrictionText +=
         "The story must be historically accurate and reflect real events, people, and settings as much as possible. ";
-    }
-    if (fictionalRestriction) {
+    } else {
       restrictionText +=
         "The story should be fictional, imaginative, and not bound by real historical events. ";
     }
@@ -144,7 +143,6 @@ const Prompt = () => {
             originalPrompt: prompt,
             settings: {
               historicalRestriction,
-              fictionalRestriction,
               chapterCount,
             },
           }),
@@ -271,7 +269,7 @@ const Prompt = () => {
                   </Button>
                   <IconButton
                     aria-label="Settings"
-                    icon={<SettingsIcon />}
+                    icon={<FaSlidersH size={20} />}
                     onClick={() => setShowSettings((prev) => !prev)}
                     variant="ghost"
                     size="sm"
@@ -309,12 +307,7 @@ const Prompt = () => {
                 >
                   Historically Accurate
                 </Checkbox>
-                <Checkbox
-                  isChecked={fictionalRestriction}
-                  onChange={(e) => setFictionalRestriction(e.target.checked)}
-                >
-                  Fictional
-                </Checkbox>
+
                 <Box>
                   <Text fontSize="sm" color={subtitleColor} mb={1}>
                     Number of Chapters
