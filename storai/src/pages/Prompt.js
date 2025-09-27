@@ -14,8 +14,16 @@ import {
   Spinner,
   HStack,
   Flex,
+  Collapse,
+  Checkbox,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  IconButton,
 } from "@chakra-ui/react";
-import { ArrowForwardIcon, RepeatIcon } from "@chakra-ui/icons";
+import { ArrowForwardIcon, RepeatIcon, SettingsIcon } from "@chakra-ui/icons";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import ApiService from "../services/api";
@@ -34,6 +42,10 @@ const Prompt = () => {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [historicalRestriction, setHistoricalRestriction] = useState(false);
+  const [fictionalRestriction, setFictionalRestriction] = useState(false);
+  const [chapterCount, setChapterCount] = useState(5);
 
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const cardBg = useColorModeValue("white", "gray.800");
@@ -65,6 +77,23 @@ const Prompt = () => {
       hexString = "0" + hexString;
     }
     return hexString.toUpperCase();
+  };
+
+  const buildGeminiPrompt = (basePrompt) => {
+    let restrictionText = "";
+    if (historicalRestriction) {
+      restrictionText +=
+        "The story must be historically accurate and reflect real events, people, and settings as much as possible. ";
+    }
+    if (fictionalRestriction) {
+      restrictionText +=
+        "The story should be fictional, imaginative, and not bound by real historical events. ";
+    }
+    return (
+      restrictionText +
+      basePrompt +
+      `\nWrap up the entire story in ${chapterCount} chapters.`
+    );
   };
 
   const handlePromptSubmit = async () => {
@@ -108,14 +137,16 @@ const Prompt = () => {
       while (true) {
         storyId = generateStoryId();
         const res = await fetch(`${createStoryURL}/${storyId}`, {
-          method: "POST", // Specify the HTTP method as POST
-          headers: {
-            "Content-Type": "application/json", // Set content type to JSON
-          },
-          // Convert the data to JSON string for the request body
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: title,
             originalPrompt: prompt,
+            settings: {
+              historicalRestriction,
+              fictionalRestriction,
+              chapterCount,
+            },
           }),
         });
         if (res.status === 201) {
@@ -123,9 +154,10 @@ const Prompt = () => {
         }
       }
 
-      console.log("Generating story for:", prompt);
+      // Build the modified prompt for Gemini
+      const geminiPrompt = buildGeminiPrompt(prompt.trim());
 
-      const response = await ApiService.generateStory(prompt.trim());
+      const response = await ApiService.generateStory(geminiPrompt);
       console.log(response);
 
       if (response) {
@@ -165,7 +197,6 @@ const Prompt = () => {
   return (
     <Box minH="100vh" bg={bgColor}>
       <Header />
-
       <Container maxW="4xl" py={8} px={4} mb="8vh">
         <VStack spacing={8} align="stretch">
           {/* Page Header */}
@@ -238,6 +269,14 @@ const Prompt = () => {
                   >
                     Clear
                   </Button>
+                  <IconButton
+                    aria-label="Settings"
+                    icon={<SettingsIcon />}
+                    onClick={() => setShowSettings((prev) => !prev)}
+                    variant="ghost"
+                    size="sm"
+                    isDisabled={isLoading}
+                  />
                 </HStack>
 
                 <Button
@@ -257,7 +296,47 @@ const Prompt = () => {
               </Flex>
             </VStack>
           </Box>
-
+          {/* Collapsible Settings */}
+          <Collapse in={showSettings} animateOpacity>
+            <Box bg={cardBg} rounded="xl" shadow="md" p={6} mb={4}>
+              <Heading size="sm" mb={2} color={textColor}>
+                Story Settings
+              </Heading>
+              <VStack align="start" spacing={4}>
+                <Checkbox
+                  isChecked={historicalRestriction}
+                  onChange={(e) => setHistoricalRestriction(e.target.checked)}
+                >
+                  Historically Accurate
+                </Checkbox>
+                <Checkbox
+                  isChecked={fictionalRestriction}
+                  onChange={(e) => setFictionalRestriction(e.target.checked)}
+                >
+                  Fictional
+                </Checkbox>
+                <Box>
+                  <Text fontSize="sm" color={subtitleColor} mb={1}>
+                    Number of Chapters
+                  </Text>
+                  <NumberInput
+                    min={1}
+                    max={20}
+                    value={chapterCount}
+                    onChange={(val) => setChapterCount(Number(val))}
+                    size="md"
+                    width="120px"
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </Box>
+              </VStack>
+            </Box>
+          </Collapse>
           {/* Sample Prompts */}
           <Box bg={cardBg} rounded="xl" shadow="md" p={6}>
             <VStack spacing={4} align="stretch">
@@ -316,10 +395,9 @@ const Prompt = () => {
           </Box>
         </VStack>
       </Container>
-
       <BottomNavigation
         activeTab="prompt"
-        onRobotClick={() => {}} // Already on prompt page
+        onRobotClick={() => {}}
         onHomeClick={handleHomeClick}
         onLibraryClick={handleLibraryClick}
       />
